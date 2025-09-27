@@ -1,0 +1,10 @@
+[package]
+name = "CorvusLauncher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = "0.13.1"
+tap = "1.0.1"
+tokio = "1.47.1"
+log = "0.4.28"
