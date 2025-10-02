@@ -1,0 +1,89 @@
+//! A listbox consisting of title, and a scrollable box with available presets. Reused across All_mods, Server_mods and Clientside mods
+
+// TODO make box, reuse functionality from AMDU and its selectable modrow.
+//  This widget should come as a column/stack, and have Title and then the box with options
+
+use std::path::PathBuf;
+use humansize::{format_size, DECIMAL};
+use iced::{Element, Length, Task, Theme};
+use iced::widget::{button, column, checkbox, row, scrollable, text, Space};
+use crate::ServerModList;
+
+#[derive(Debug)]
+pub struct SelectionListbox {
+    pub id: usize,
+    pub elements: Vec<ServerModList>,
+}
+
+#[derive(Clone, Debug)]
+pub enum Message {
+    ToggleSelection(usize, bool),
+}
+
+impl SelectionListbox {
+    pub fn new(id: usize, elements: Vec<ServerModList>) -> Self {
+        Self {
+            id,
+            elements,
+        }
+    }
+
+    pub fn update(&mut self, message: Message) -> Task<Message> {
+        match message {
+            Message::ToggleSelection(i, checked) => {
+                if let Some(element) = self.elements.get_mut(i) {
+                    element.selected = checked;
+                }
+                Task::none()
+            }
+        }
+    }
+
+    // /// helper function to handle toggle event on checkbox, identical behavior as the button on_press
+    // pub fn checkbox_toggled(id: u64, checked: bool) -> Message::ToggleSelection {
+    //     Message::ToggleSelection(id as usize, checked);
+    // }
+
+    pub fn view(&self) -> Element<'_, Message> {
+
+        // make list of selections
+        let selection_list =
+            self.elements
+                .iter()
+                .enumerate()
+                .fold(column![].spacing(6), |col, (i, modlist)| {
+                    col.push(
+                        row![
+                                button(
+                                    row![
+                                        text(&modlist.name).width(Length::FillPortion(8))
+                                        .width(Length::FillPortion(8)),
+                                        // checkbox("", modlist.selected).on_toggle(self.checkbox_toggled(i)), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
+                                        checkbox("", modlist.selected), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
+                                    ]
+                                )
+                                .padding(8)
+                                .style(|theme: &Theme, status| {
+                                    let palette = theme.extended_palette();
+                                    match modlist.selected {
+                                        false => button::Style::default().with_background(palette.secondary.base.color),
+                                        _ => button::primary(theme, status),
+                                    }
+                                })
+                                .width(Length::Fill)
+                                .on_press(Message::ToggleSelection(i, !modlist.selected)),
+                                // Space::with_width(15)
+                             ]
+                    )
+                });
+
+
+        let scrollable: Element<Message> =
+            scrollable(selection_list)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into();
+
+        scrollable
+    }
+}
