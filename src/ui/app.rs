@@ -4,8 +4,8 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use iced::{Length, Task};
 use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{slider, space, Button, Stack};
-use iced::widget::{button, column, container, progress_bar, row, scrollable, text, Space};
+use iced::widget::{rule, slider, space, Button, Stack};
+use iced::widget::{button, column, container, progress_bar, row, scrollable, text, Space, Rule};
 use iced::widget::space::{horizontal, vertical};
 use crate::{Cli, ServerModList};
 use crate::messages::Message;
@@ -13,6 +13,7 @@ use crate::messages::Message;
 
 use crate::ui;
 use crate::ui::number_input::NumberInput;
+use crate::ui::profile_chooser::ProfileChooser;
 use crate::ui::selection_listbox::SelectionListbox;
 use super::Errors;
 
@@ -41,6 +42,9 @@ pub struct App {
 
     /// Number of HCs to launch
     pub hc_launch_num: NumberInput,
+
+    /// Server profile chooser
+    pub server_profile_chooser: ProfileChooser,
 }
 #[bon::bon]
 impl App {
@@ -55,6 +59,7 @@ impl App {
             time_elapsed: Duration::ZERO,
             errors: Errors::default(),
             hc_launch_num: NumberInput::default(),
+            server_profile_chooser: ProfileChooser::new(),
             // config,
             cli,
             // popup: None,
@@ -104,7 +109,10 @@ impl App {
                                 listbox.map(move |message| Message::SelectionBoxUpdate(index, message))
                             }),
                     ),
+                    rule::horizontal(2),
                     row![
+                        self.server_profile_chooser.view(self).map(move |msg| Message::ServerProfileChanged(msg)),
+                        horizontal().width(20),
                         button("LAUNCH SERVER").padding(10),
                         horizontal().width(20),
                         column![
@@ -115,10 +123,11 @@ impl App {
                             .align_x(Horizontal::Center)
                             .spacing(4)
                     ]
-                        .align_y(Vertical::Bottom)
-                        .spacing(10)
+                        .align_y(Vertical::Center)
+                        .spacing(100)
                         .padding(15)
-                    ]
+                        .width(Length::Fill)
+                ]
             )
             // information popup with basic tips
             // .push_maybe(
@@ -152,6 +161,9 @@ impl App {
             },
             Message::HcInputChanged(msg) => {
                 self.hc_launch_num.update(msg);
+            }
+            Message::ServerProfileChanged(msg) => {
+                self.server_profile_chooser.update(msg);
             }
         }
 

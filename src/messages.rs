@@ -20,6 +20,8 @@ pub enum Message {
     SelectionBoxUpdate(usize, ui::selection_listbox::Message),
     /// Update HC count
     HcInputChanged(ui::number_input::Message),
+    /// Update server profile selected
+    ServerProfileChanged(ui::profile_chooser::Message),
 
     /// An error occured, display to the user
     Error(String),
