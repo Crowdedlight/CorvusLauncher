@@ -6,12 +6,14 @@
 use std::path::PathBuf;
 use humansize::{format_size, DECIMAL};
 use iced::{Element, Length, Task, Theme};
-use iced::widget::{button, column, checkbox, row, scrollable, text, Space};
+use iced::alignment::{Horizontal, Vertical};
+use iced::widget::{button, column, checkbox, row, scrollable, text, Space, container};
 use crate::ServerModList;
 
 #[derive(Debug)]
 pub struct SelectionListbox {
     pub id: usize,
+    pub title: String,
     pub elements: Vec<ServerModList>,
 }
 
@@ -21,9 +23,10 @@ pub enum Message {
 }
 
 impl SelectionListbox {
-    pub fn new(id: usize, elements: Vec<ServerModList>) -> Self {
+    pub fn new(id: usize, title: String, elements: Vec<ServerModList>) -> Self {
         Self {
             id,
+            title,
             elements,
         }
     }
@@ -84,6 +87,15 @@ impl SelectionListbox {
             .height(Length::Fill)
             .into();
 
-        scrollable
+        column![
+            text(&self.title)
+                .size(30)
+                .width(Length::Fill)
+                .align_x(Horizontal::Center)
+                .align_y(Vertical::Top),
+            scrollable
+        ]
+            .padding(10)
+            .into()
     }
 }

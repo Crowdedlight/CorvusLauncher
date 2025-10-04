@@ -7,6 +7,7 @@ build = "build.rs"
 [dependencies]
 #iced = "0.13.1"
 iced = { git = "https://github.com/iced-rs/iced", rev = "0a34496"}
+
 tap = "1.0.1"
 tokio = { version = "1.47.1", features = ["fs"] }
 

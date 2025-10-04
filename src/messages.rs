@@ -18,6 +18,9 @@ pub enum Message {
     // Letters(ui::popup::letters::Message),
     /// Update Selection listbox, consists of unique name of listbox, index of element in it, and the state
     SelectionBoxUpdate(usize, ui::selection_listbox::Message),
+    /// Update HC count
+    HcInputChanged(ui::number_input::Message),
+
     /// An error occured, display to the user
     Error(String),
     /// Do nothing

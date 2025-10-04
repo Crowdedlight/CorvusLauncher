@@ -1,15 +1,18 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use iced::{Length, Task};
 use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{Stack};
+use iced::widget::{slider, space, Button, Stack};
 use iced::widget::{button, column, container, progress_bar, row, scrollable, text, Space};
-use crate::Cli;
+use iced::widget::space::{horizontal, vertical};
+use crate::{Cli, ServerModList};
 use crate::messages::Message;
 // use crate::Config;
 
 use crate::ui;
+use crate::ui::number_input::NumberInput;
 use crate::ui::selection_listbox::SelectionListbox;
 use super::Errors;
 
@@ -33,8 +36,11 @@ pub struct App {
     // Currently opened popup
     // pub popup: Option<Popup>,
 
-    /// hashmap of our selection listboxes. Stored like this to allow delegation of modpack selections while reusing the component
-    pub selection_listboxes: Vec<SelectionListbox>
+    /// vector of our selection listboxes. Stored like this to allow delegation of modpack selections while reusing the component
+    pub selection_listboxes: Vec<SelectionListbox>,
+
+    /// Number of HCs to launch
+    pub hc_launch_num: NumberInput,
 }
 #[bon::bon]
 impl App {
@@ -48,10 +54,27 @@ impl App {
             time_started: Instant::now(),
             time_elapsed: Duration::ZERO,
             errors: Errors::default(),
+            hc_launch_num: NumberInput::default(),
             // config,
             cli,
             // popup: None,
-            selection_listboxes: vec![],
+            // TODO, delete default testing
+            selection_listboxes: vec![
+                SelectionListbox::new(0, "Modpacks".parse().unwrap(), vec![
+                    ServerModList::new("Modern".parse().unwrap(), PathBuf::new(), false),
+                    ServerModList::new("Cold War".parse().unwrap(), PathBuf::new(), false),
+                    ServerModList::new("WW2".parse().unwrap(), PathBuf::new(), false),
+                    ServerModList::new("Scifi".parse().unwrap(), PathBuf::new(), false),
+                ]),
+                SelectionListbox::new(1, "Clientside".parse().unwrap(), vec![
+                    ServerModList::new("Clientside Normal".parse().unwrap(), PathBuf::new(), false),
+                    ServerModList::new("Clientside Big Event".parse().unwrap(), PathBuf::new(), false),
+                ]),
+                SelectionListbox::new(2, "Server mods".parse().unwrap(), vec![
+                    ServerModList::new("OCAP2".parse().unwrap(), PathBuf::new(), false),
+                    ServerModList::new("Advanced Slingloading".parse().unwrap(), PathBuf::new(), false),
+                ]),
+            ],
         }
     }
 
@@ -67,6 +90,7 @@ impl App {
                         .size(40)
                         .align_x(Horizontal::Center)
                         .align_y(Vertical::Top),
+                    vertical().height(20),
                     // listboxes
                     row(
                         self.selection_listboxes
@@ -79,7 +103,21 @@ impl App {
                                 // message of the `element`.
                                 listbox.map(move |message| Message::SelectionBoxUpdate(index, message))
                             }),
-                    )
+                    ),
+                    row![
+                        button("LAUNCH SERVER").padding(10),
+                        horizontal().width(20),
+                        column![
+                            text("HCs Amount").size(24),
+                            self.hc_launch_num.view(self).map(move |message| Message::HcInputChanged(message)),
+                            button("LAUNCH HCs").padding(10),
+                        ]
+                            .align_x(Horizontal::Center)
+                            .spacing(4)
+                    ]
+                        .align_y(Vertical::Bottom)
+                        .spacing(10)
+                        .padding(15)
                     ]
             )
             // information popup with basic tips
@@ -111,6 +149,9 @@ impl App {
                 if let Some(listbox) = self.selection_listboxes.get_mut(index) {
                     listbox.update(listbox_msg);
                 }
+            },
+            Message::HcInputChanged(msg) => {
+                self.hc_launch_num.update(msg);
             }
         }
 
