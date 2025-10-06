@@ -1,7 +1,10 @@
 //! A message represents some event in the app that mutates the global state
 
+use std::path::PathBuf;
+use std::sync::Arc;
 use crate::ui;
 use std::time::Instant;
+use crate::configs::config::LocationPaths;
 
 /// Handles all mutation of the global state, the `App`.
 pub trait Handler {
@@ -22,6 +25,8 @@ pub enum Message {
     HcInputChanged(ui::number_input::Message),
     /// Update server profile selected
     ServerProfileChanged(ui::profile_chooser::Message),
+    /// open file dialog
+    ConfigOpenFileDialog(LocationPaths),
 
     /// An error occured, display to the user
     Error(String),

@@ -1,3 +1,5 @@
+use crate::configs::config::DEFAULT_LOG_FILE_PATH;
+use crate::configs::config::DEFAULT_CONFIG_FILE_PATH;
 use std::path::PathBuf;
 use std::sync::LazyLock;
 use clap::ValueHint;
@@ -20,7 +22,7 @@ const STYLES: clap::builder::Styles = clap::builder::Styles::styled()
 #[command(version, styles = STYLES, long_about = None)]
 #[expect(clippy::struct_excessive_bools, reason = "normal for CLIs")]
 pub struct Cli {
-    /// Use the provided config file
+    /// Use the provided configs file
     #[arg(
         help_heading = "Config",
         short = 'C',
@@ -85,24 +87,3 @@ pub struct Cli {
     pub debug: bool,
 }
 
-/// Represents the default location of the config file
-static DEFAULT_CONFIG_FILE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
-    etcetera::choose_base_strategy().map_or_else(
-        |err| {
-            log::warn!("Could not determine the config directory: {err}");
-            PathBuf::from("corvuslauncher.yaml")
-        },
-        |strategy| strategy.config_dir().join("corvuslauncher.yaml"),
-    )
-});
-
-/// Represents the default location of the config file
-pub static DEFAULT_LOG_FILE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
-    etcetera::choose_base_strategy().map_or_else(
-        |err| {
-            log::warn!("Could not determine the config directory: {err}");
-            PathBuf::from("corvuslauncher.log")
-        },
-        |strategy| strategy.cache_dir().join("corvuslauncher.log"),
-    )
-});

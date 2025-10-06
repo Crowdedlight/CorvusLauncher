@@ -1,16 +1,11 @@
 # Config settings for launcher, saves paths to arma3 server folder, modpack folder, clientside folder
 
 # folder locations for Arma 3 server folder, and the folders you want to store the 3 different modlists in
-locations:
-  a3_root: ""
-  a3_server_executable: ""
-  folder_modlists: ""
-  folder_clientside: ""
-  folder_servermods: ""
+a3_root = ""
+a3_server_executable = ""
+folder_modlists = ""
+folder_clientside = ""
+folder_servermods = ""
 
-
-server_profiles:
-  - "ServerNormal"
-  - "ServerLib"
-  - "ServerSOG"
-  - "ServerEvent"
+# Server profiles
+server_profiles = ["ServerNormal", "ServerLib", "ServerSOG", "ServerEvent"]

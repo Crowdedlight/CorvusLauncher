@@ -21,7 +21,7 @@ impl ProfileChooser {
 
         // TODO get list of all profile options from A3 master dir
         // TODO we might just hardcode instead, to avoid the ownership challenge and be able to make new profile?
-        //  (We could store options in config, and allow to add new profiles from UI)
+        //  (We could store options in configs, and allow to add new profiles from UI)
 
         Self {selected : Some("ServerNormal".parse().unwrap()), options : vec!["ServerLib".parse().unwrap(), "ServerATF".parse().unwrap(), "ServerEvent".parse().unwrap(), "ServerNormal".parse().unwrap()]} // TODO debugging
     }

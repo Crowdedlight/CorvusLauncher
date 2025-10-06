@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
 use iced::{Length, Task};
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{rule, slider, space, Button, Stack};
 use iced::widget::{button, column, container, progress_bar, row, scrollable, text, Space, Rule};
 use iced::widget::space::{horizontal, vertical};
-use crate::{Cli, ServerModList};
+use crate::{Cli, Config, ServerModList};
+use crate::configs::config::open_file_dialog;
 use crate::messages::Message;
 // use crate::Config;
 
@@ -21,14 +22,12 @@ use super::Errors;
 /// Holds the state
 #[derive(Debug)]
 pub struct App {
-    /// If an image is in the process of being uploaded (but hasn't yet)
-    pub is_uploading_image: bool,
     /// When the application was launched
     pub time_started: Instant,
     /// How long has passed since starting ferrishot
     pub time_elapsed: Duration,
     /// Config of the app
-    // pub config: Arc<Config>,
+    pub config: Arc<RwLock<Config>>,
     /// Errors to display to the user
     pub errors: Errors,
     /// Command line arguments passed
@@ -51,16 +50,15 @@ impl App {
     #[builder]
     pub fn new(
         cli: Arc<Cli>,
-        // config: Arc<Config>,
+        configs: Arc<RwLock<Config>>,
     ) -> Self {
         Self {
-            is_uploading_image: false,
             time_started: Instant::now(),
             time_elapsed: Duration::ZERO,
             errors: Errors::default(),
             hc_launch_num: NumberInput::default(),
             server_profile_chooser: ProfileChooser::new(),
-            // config,
+            config: configs,
             cli,
             // popup: None,
             // TODO, delete default testing
@@ -129,14 +127,20 @@ impl App {
                         .width(Length::Fill)
                 ]
             )
-            // information popup with basic tips
-            // .push_maybe(
-            //     (self.popup.is_none() && self.selection.is_none())
-            //         .then(|| super::welcome_message(self)),
-            // )
-            // errors
+            .push(super::welcome_message(self))
             .push(self.errors.view(self))
             .into()
+
+        // TODO borrow issue doing it this way instead of push and push_maybe... conditional rendering, maybe make it stateful and check in widget?
+        // // only push welcome for configuration if current config is invalid
+        // if self.config.read().unwrap().is_config_valid() {
+        //     // main_stack.push(super::welcome_message(self));
+        // }
+        //
+        // // push errors
+        // main_stack.push(self.errors.view(self));
+        //
+        // main_stack.into()
     }
 
     /// Modifies the app's state
@@ -161,10 +165,14 @@ impl App {
             },
             Message::HcInputChanged(msg) => {
                 self.hc_launch_num.update(msg);
-            }
+            },
             Message::ServerProfileChanged(msg) => {
                 self.server_profile_chooser.update(msg);
-            }
+            },
+            Message::ConfigOpenFileDialog(msg) => {
+                // Run function to open filedialog and save return
+                open_file_dialog(self.config.clone(), msg);
+            },
         }
 
         Task::none()

@@ -1,32 +1,31 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, RwLock};
 use anyhow::anyhow;
 use clap::Parser as _;
 use iced::Theme::Dark;
-use CorvusLauncher::App;
+use CorvusLauncher::{App, Config};
 use CorvusLauncher::Cli;
 
 /// RGBA bytes for the Logo. Generated with `build.rs`
 const LOGO: &[u8; 64 * 64 * 4] = include_bytes!(concat!(env!("OUT_DIR"), "/logo.bin"));
 
 fn main() -> anyhow::Result<()> {
-
     // Parse command line arguments
     let cli = Arc::new(Cli::parse());
 
     // Setup logging
     CorvusLauncher::logging::initialize(&cli);
 
-    // TODO Parse or create `corvuslauncher.yaml` config file
-    
+    // init config
+    let config = Arc::new(RwLock::new(Config::new()));
 
-    //
+    log::info!("Initialized CorvusLauncher");
 
     // launch app
     iced::application(
             move || {
                 App::builder()
                     .cli(Arc::clone(&cli))
-                    // .config(Arc::clone(&config))
+                    .configs(Arc::clone(&config))
                     .build()
             },
             App::update,
@@ -57,6 +56,3 @@ fn main() -> anyhow::Result<()> {
 // TODO - launch arma3 server with selected mods passed to it, and disown the process so the launcher can be closed
 
 // TODO - Extra, selection what server-profile to use. Events, or normal. (for netcode settings and log location etc)
-
-
-// Needs mods struct, and functionality to search in a modfolder for .bikeys

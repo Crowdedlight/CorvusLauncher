@@ -61,9 +61,9 @@ impl Errors {
                     .width(ERROR_WIDTH)
                     // .style(|_| container::Style {
                     //     text_color: Some(Color::WHITE),
-                    //     background: Some(Background::Color(app.config.theme.error_bg)),
+                    //     background: Some(Background::Color(app.configs.theme.error_bg)),
                     //     border: iced::Border {
-                    //         color: app.config.theme.drop_shadow,
+                    //         color: app.configs.theme.drop_shadow,
                     //         width: 4.0,
                     //         radius: 2.0.into(),
                     //     },
