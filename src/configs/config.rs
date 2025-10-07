@@ -73,40 +73,23 @@ impl Config {
         true
     }
 
-    /// Update location path in config. Even though it would be more ideal to batch together instead of update config per dialog choice, this should work fine for MVP
-    pub fn update_paths(&mut self, location_type: LocationPaths, path: PathBuf) -> anyhow::Result<()> {
-
-        log::debug!("update_paths: type: {:?}, handle: {:?}", location_type, path);
-
-        match location_type {
-            LocationPaths::A3Root => {self.update_config(Some(path), None, None, None)}
-            LocationPaths::Modlists => {self.update_config(None, Some(path), None, None)}
-            LocationPaths::Clientsides => {self.update_config(None, None, Some(path), None)}
-            LocationPaths::ServerMods => {self.update_config(None, None, None, Some(path))}
-        }
-    }
-
-    pub fn update_config(&mut self, a3_root: Option<PathBuf>, folder_modlists: Option<PathBuf>, folder_clientside: Option<PathBuf>, folder_servermods: Option<PathBuf>) -> anyhow::Result<()> {
+    pub fn update_config(&mut self, a3_root: PathBuf, folder_modlists: PathBuf, folder_clientside: PathBuf, folder_servermods: PathBuf) -> anyhow::Result<()> {
 
         // update values
-        if let Some(a3_root) = a3_root {
-            self.a3_root = a3_root.clone();
-            self.a3_server_executable = a3_root.join(A3_SERVER_BINARY_NAME);
-            log::debug!("Updated a3_root to: {:?}", self.a3_root);
-            log::debug!("Updated a3_server_executable to: {:?}", self.a3_server_executable);
-        }
-        if let Some(folder_modlists) = folder_modlists {
-            self.folder_modlists = folder_modlists;
-            log::debug!("Updated folder_modlists to: {:?}", self.folder_modlists);
-        }
-        if let Some(folder_clientside) = folder_clientside {
-            self.folder_clientside = folder_clientside;
-            log::debug!("Updated folder_clientside to: {:?}", self.folder_clientside);
-        }
-        if let Some(folder_servermods) = folder_servermods {
-            self.folder_servermods = folder_servermods;
-            log::debug!("Updated folder_servermods to: {:?}", self.folder_servermods);
-        }
+        self.a3_root = a3_root.clone();
+        self.a3_server_executable = a3_root.join(A3_SERVER_BINARY_NAME);
+        log::debug!("Updated a3_root to: {:?}", self.a3_root);
+        log::debug!("Updated a3_server_executable to: {:?}", self.a3_server_executable);
+
+        self.folder_modlists = folder_modlists;
+        log::debug!("Updated folder_modlists to: {:?}", self.folder_modlists);
+
+        self.folder_clientside = folder_clientside;
+        log::debug!("Updated folder_clientside to: {:?}", self.folder_clientside);
+
+        self.folder_servermods = folder_servermods;
+        log::debug!("Updated folder_servermods to: {:?}", self.folder_servermods);
+
 
         // update file on disk, by just overwriting it with current configs. (Don't support external file changes without a restart)
         let config = Config::default();
@@ -115,22 +98,6 @@ impl Config {
         log::info!("Updated configs");
         Ok(())
     }
-}
-
-/// function to open file dialog to pick folder. We don't need async as nothing else in app has to run while picking
-pub fn open_file_dialog(mut config: Arc<RwLock<Config>>, location: LocationPaths) -> anyhow::Result<()> {
-
-    // if we run into issues with slow saving to disk, either change to save all values at once, or make it async, but that will open new problems...
-
-    // open filedialog
-    let selection = rfd::FileDialog::new().pick_folder();
-
-    if let Some(selection) = selection {
-        config.write().unwrap().update_paths(location, selection.to_path_buf())
-    } else {
-        Err(anyhow::anyhow!("Have to pick a folder..."))
-    }
-
 }
 
 /// Represents the default location of the configs file

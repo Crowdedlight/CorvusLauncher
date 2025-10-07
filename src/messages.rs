@@ -25,8 +25,8 @@ pub enum Message {
     HcInputChanged(ui::number_input::Message),
     /// Update server profile selected
     ServerProfileChanged(ui::profile_chooser::Message),
-    /// open file dialog
-    ConfigOpenFileDialog(LocationPaths),
+    /// welcome view messages
+    WelcomeViewMessage(ui::welcome_message::Message),
 
     /// An error occured, display to the user
     Error(String),

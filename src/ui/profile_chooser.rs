@@ -11,7 +11,7 @@ pub struct ProfileChooser {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum Message {
+pub enum Message {
     ProfileSelected(String),
 }
 
@@ -25,7 +25,7 @@ impl ProfileChooser {
 
         Self {selected : Some("ServerNormal".parse().unwrap()), options : vec!["ServerLib".parse().unwrap(), "ServerATF".parse().unwrap(), "ServerEvent".parse().unwrap(), "ServerNormal".parse().unwrap()]} // TODO debugging
     }
-    pub(crate) fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
+    pub fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
 
         column![
             text("Server Profile").size(24),

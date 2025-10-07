@@ -2,13 +2,12 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
-use iced::{Length, Task};
+use iced::{Element, Length, Task};
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{rule, slider, space, Button, Stack};
 use iced::widget::{button, column, container, progress_bar, row, scrollable, text, Space, Rule};
 use iced::widget::space::{horizontal, vertical};
 use crate::{Cli, Config, ServerModList};
-use crate::configs::config::open_file_dialog;
 use crate::messages::Message;
 // use crate::Config;
 
@@ -16,6 +15,7 @@ use crate::ui;
 use crate::ui::number_input::NumberInput;
 use crate::ui::profile_chooser::ProfileChooser;
 use crate::ui::selection_listbox::SelectionListbox;
+use crate::ui::welcome_message::{WelcomeView};
 use super::Errors;
 
 
@@ -44,6 +44,9 @@ pub struct App {
 
     /// Server profile chooser
     pub server_profile_chooser: ProfileChooser,
+
+    /// welcome message - aka set config
+    pub welcome_view: WelcomeView,
 }
 #[bon::bon]
 impl App {
@@ -58,6 +61,7 @@ impl App {
             errors: Errors::default(),
             hc_launch_num: NumberInput::default(),
             server_profile_chooser: ProfileChooser::new(),
+            welcome_view: WelcomeView::new(configs.clone()),
             config: configs,
             cli,
             // popup: None,
@@ -83,6 +87,15 @@ impl App {
 
     /// Renders the app
     pub fn view(&self) -> iced::Element<Message> {
+
+
+        // conditionally set to Some or None to show this view
+        let mut welcome_view: Option<Element<Message>> = None;
+        // only push welcome for configuration if current config is invalid
+        if !self.config.read().unwrap().is_config_valid() {
+            welcome_view = Some(self.welcome_view.view(self).map(move |msg| Message::WelcomeViewMessage(msg)));
+        }
+
         Stack::new()
             // Main window
             .push(
@@ -127,20 +140,10 @@ impl App {
                         .width(Length::Fill)
                 ]
             )
-            .push(super::welcome_message(self))
+            .push(welcome_view)
             .push(self.errors.view(self))
             .into()
 
-        // TODO borrow issue doing it this way instead of push and push_maybe... conditional rendering, maybe make it stateful and check in widget?
-        // // only push welcome for configuration if current config is invalid
-        // if self.config.read().unwrap().is_config_valid() {
-        //     // main_stack.push(super::welcome_message(self));
-        // }
-        //
-        // // push errors
-        // main_stack.push(self.errors.view(self));
-        //
-        // main_stack.into()
     }
 
     /// Modifies the app's state
@@ -169,9 +172,8 @@ impl App {
             Message::ServerProfileChanged(msg) => {
                 self.server_profile_chooser.update(msg);
             },
-            Message::ConfigOpenFileDialog(msg) => {
-                // Run function to open filedialog and save return
-                open_file_dialog(self.config.clone(), msg);
+            Message::WelcomeViewMessage(msg) => {
+                self.welcome_view.update(msg);
             },
         }
 
