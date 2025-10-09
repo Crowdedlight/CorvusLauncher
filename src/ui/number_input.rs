@@ -1,7 +1,7 @@
-use iced::{Element, Length, Task};
-use iced::alignment::Vertical;
 use iced::alignment::Horizontal;
+use iced::alignment::Vertical;
 use iced::widget::{button, row, text};
+use iced::{Element, Length, Task};
 
 #[derive(Debug, Default)]
 pub struct NumberInput {
@@ -20,11 +20,11 @@ impl NumberInput {
             Message::ValueDecreased() => {
                 self.value -= 1;
                 Task::none()
-            },
+            }
             Message::ValueIncreased() => {
                 self.value += 1;
                 Task::none()
-            },
+            }
         }
     }
     pub fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
@@ -36,6 +36,7 @@ impl NumberInput {
                 .align_y(Vertical::Center)
                 .align_x(Horizontal::Center),
             button("+").on_press(Message::ValueIncreased()).padding(5)
-        ].into()
+        ]
+        .into()
     }
 }

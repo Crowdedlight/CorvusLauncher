@@ -1,11 +1,11 @@
-use crate::configs::config::DEFAULT_LOG_FILE_PATH;
 use crate::configs::config::DEFAULT_CONFIG_FILE_PATH;
-use std::path::PathBuf;
-use std::sync::LazyLock;
+use crate::configs::config::DEFAULT_LOG_FILE_PATH;
+use clap::Parser;
 use clap::ValueHint;
 use clap::builder::styling::{AnsiColor, Effects};
-use clap::Parser;
 use etcetera::BaseStrategy;
+use std::path::PathBuf;
+use std::sync::LazyLock;
 
 // styling for errors
 const STYLES: clap::builder::Styles = clap::builder::Styles::styled()
@@ -16,7 +16,6 @@ const STYLES: clap::builder::Styles = clap::builder::Styles::styled()
     .error(AnsiColor::BrightRed.on_default().effects(Effects::BOLD))
     .valid(AnsiColor::BrightCyan.on_default().effects(Effects::BOLD))
     .invalid(AnsiColor::BrightYellow.on_default().effects(Effects::BOLD));
-
 
 #[derive(Parser, Debug)]
 #[command(version, styles = STYLES, long_about = None)]
@@ -86,4 +85,3 @@ pub struct Cli {
     )]
     pub debug: bool,
 }
-

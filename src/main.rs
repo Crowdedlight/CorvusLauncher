@@ -1,9 +1,9 @@
-use std::sync::{Arc, Mutex, RwLock};
+use CorvusLauncher::Cli;
+use CorvusLauncher::{App, Config};
 use anyhow::anyhow;
 use clap::Parser as _;
 use iced::Theme::Dark;
-use CorvusLauncher::{App, Config};
-use CorvusLauncher::Cli;
+use std::sync::{Arc, Mutex, RwLock};
 
 /// RGBA bytes for the Logo. Generated with `build.rs`
 const LOGO: &[u8; 64 * 64 * 4] = include_bytes!(concat!(env!("OUT_DIR"), "/logo.bin"));
@@ -22,36 +22,36 @@ fn main() -> anyhow::Result<()> {
 
     // launch app
     iced::application(
-            move || {
-                App::builder()
-                    .cli(Arc::clone(&cli))
-                    .configs(Arc::clone(&config))
-                    .build()
-            },
-            App::update,
-            App::view,
-        )
-        // .subscription(App::subscription)
-        .window(iced::window::Settings {
-            level: iced::window::Level::Normal,
-            icon: Some(
-                iced::window::icon::from_rgba(LOGO.to_vec(), 64, 64)
-                    .expect("Icon to be valid RGBA bytes"),
-            ),
-            ..Default::default()
-        })
-        .title("CorvusLauncher")
-        .theme(Dark)
-        .default_font(iced::Font::MONOSPACE)
-        .run()
-        .map_err(|err| anyhow!("Failed to start CorvusLauncher: {err}"))
+        move || {
+            App::builder()
+                .cli(Arc::clone(&cli))
+                .configs(Arc::clone(&config))
+                .build()
+        },
+        App::update,
+        App::view,
+    )
+    // .subscription(App::subscription)
+    .window(iced::window::Settings {
+        level: iced::window::Level::Normal,
+        icon: Some(
+            iced::window::icon::from_rgba(LOGO.to_vec(), 64, 64)
+                .expect("Icon to be valid RGBA bytes"),
+        ),
+        ..Default::default()
+    })
+    .title("CorvusLauncher")
+    .theme(Dark)
+    .default_font(iced::Font::MONOSPACE)
+    .run()
+    .map_err(|err| anyhow!("Failed to start CorvusLauncher: {err}"))
 }
 
-// TODO - On launch, check if settings are set at ~temp location, depending on OS. 
-//        If set load and continue, otherwise make window for user to set location for CORE, Modpacks, Arma3 install, and save at temp location. (Like how Hemtt does) 
+// TODO - On launch, check if settings are set at ~temp location, depending on OS.
+//        If set load and continue, otherwise make window for user to set location for CORE, Modpacks, Arma3 install, and save at temp location. (Like how Hemtt does)
 // TODO - UI show list of modpacks in CORE, Modpacks, Clientside folders. All toggleable with checkbox, and CORE pre-selected
 // TODO - Button to start server with selected mods, button to start headless 1 and 2
-// TODO - When selected to start, run the functionality the powershell script otherwise did. (Clean keys, go trough mods, look for keys and copy in etc). 
+// TODO - When selected to start, run the functionality the powershell script otherwise did. (Clean keys, go trough mods, look for keys and copy in etc).
 // TODO - If failing to find a key, show error to user in popup
 // TODO - launch arma3 server with selected mods passed to it, and disown the process so the launcher can be closed
 

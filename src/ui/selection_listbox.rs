@@ -3,12 +3,12 @@
 // TODO make box, reuse functionality from AMDU and its selectable modrow.
 //  This widget should come as a column/stack, and have Title and then the box with options
 
-use std::path::PathBuf;
-use humansize::{format_size, DECIMAL};
-use iced::{Element, Length, Task, Theme};
-use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{button, column, checkbox, row, scrollable, text, Space, container};
 use crate::ServerModList;
+use humansize::{DECIMAL, format_size};
+use iced::alignment::{Horizontal, Vertical};
+use iced::widget::{Space, button, checkbox, column, container, row, scrollable, text};
+use iced::{Element, Length, Task, Theme};
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct SelectionListbox {
@@ -48,41 +48,36 @@ impl SelectionListbox {
     // }
 
     pub fn view(&self) -> Element<'_, Message> {
-
         // make list of selections
         let selection_list =
             self.elements
                 .iter()
                 .enumerate()
                 .fold(column![].spacing(6), |col, (i, modlist)| {
-                    col.push(
-                        row![
-                                button(
-                                    row![
-                                        text(&modlist.name).width(Length::FillPortion(8))
-                                        .width(Length::FillPortion(8)),
-                                        // checkbox("", modlist.selected).on_toggle(self.checkbox_toggled(i)), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
-                                        checkbox("", modlist.selected), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
-                                    ]
-                                )
-                                .padding(8)
-                                .style(|theme: &Theme, status| {
-                                    let palette = theme.extended_palette();
-                                    match modlist.selected {
-                                        false => button::Style::default().with_background(palette.secondary.base.color),
-                                        _ => button::primary(theme, status),
-                                    }
-                                })
-                                .width(Length::Fill)
-                                .on_press(Message::ToggleSelection(i, !modlist.selected)),
-                                // Space::with_width(15)
-                             ]
-                    )
+                    col.push(row![
+                        button(row![
+                            text(&modlist.name)
+                                .width(Length::FillPortion(8))
+                                .width(Length::FillPortion(8)),
+                            // checkbox("", modlist.selected).on_toggle(self.checkbox_toggled(i)), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
+                            checkbox("", modlist.selected), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
+                        ])
+                        .padding(8)
+                        .style(|theme: &Theme, status| {
+                            let palette = theme.extended_palette();
+                            match modlist.selected {
+                                false => button::Style::default()
+                                    .with_background(palette.secondary.base.color),
+                                _ => button::primary(theme, status),
+                            }
+                        })
+                        .width(Length::Fill)
+                        .on_press(Message::ToggleSelection(i, !modlist.selected)),
+                        // Space::with_width(15)
+                    ])
                 });
 
-
-        let scrollable: Element<Message> =
-            scrollable(selection_list)
+        let scrollable: Element<Message> = scrollable(selection_list)
             .width(Length::Fill)
             .height(Length::Fill)
             .into();
@@ -95,7 +90,7 @@ impl SelectionListbox {
                 .align_y(Vertical::Top),
             scrollable
         ]
-            .padding(10)
-            .into()
+        .padding(10)
+        .into()
     }
 }

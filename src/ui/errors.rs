@@ -2,12 +2,15 @@
 
 use crate::messages::Message;
 
+use iced::widget::space;
+use iced::{
+    Background, Color, Element,
+    widget::{self, Column, Space, container, row},
+};
 use std::{
     borrow::Cow,
     time::{Duration, Instant},
 };
-use iced::{Background, Element, widget::{self, Column, Space, container, row}, Color};
-use iced::widget::space;
 
 /// Show an error message to the user
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]

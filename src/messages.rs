@@ -1,10 +1,10 @@
 //! A message represents some event in the app that mutates the global state
 
+use crate::configs::config::LocationPaths;
+use crate::ui;
 use std::path::PathBuf;
 use std::sync::Arc;
-use crate::ui;
 use std::time::Instant;
-use crate::configs::config::LocationPaths;
 
 /// Handles all mutation of the global state, the `App`.
 pub trait Handler {

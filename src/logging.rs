@@ -1,5 +1,3 @@
-
-
 pub fn initialize(cli: &crate::Cli) {
     if cli.log_stderr {
         env_logger::builder()

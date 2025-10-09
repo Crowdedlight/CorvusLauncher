@@ -1,11 +1,11 @@
+mod arma;
 mod configs;
 mod messages;
-mod ui;
 mod server_modlist;
-mod arma;
+mod ui;
 
 use messages::Message;
 pub mod logging;
-pub use configs::{Cli, DEFAULT_LOG_FILE_PATH, Config};
-pub use ui::App;
+pub use configs::{Cli, Config, DEFAULT_LOG_FILE_PATH};
 pub use server_modlist::ServerModList;
+pub use ui::App;
