@@ -1,3 +1,4 @@
+use std::default::Default;
 use std::collections::HashMap;
 use std::{fmt, fs};
 use std::fs::exists;
@@ -25,7 +26,7 @@ pub enum LocationPaths {
 }
 
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub a3_root: PathBuf,
     pub a3_server_executable: PathBuf,
@@ -35,6 +36,18 @@ pub struct Config {
     pub server_profiles: Vec<String>
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            a3_root: Default::default(),
+            folder_servermods: Default::default(),
+            folder_clientside: Default::default(),
+            folder_modlists: Default::default(),
+            a3_server_executable: Default::default(),
+            server_profiles: vec!["ServerNormal".to_string()]
+        }
+    }
+}
 
 
 impl Config {
@@ -121,5 +134,3 @@ pub static DEFAULT_LOG_FILE_PATH: LazyLock<PathBuf> = LazyLock::new(|| {
         |strategy| strategy.cache_dir().join("corvuslauncher.log"),
     )
 });
-
-

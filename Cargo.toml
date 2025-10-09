@@ -8,8 +8,6 @@ build = "build.rs"
 #iced = "0.13.1"
 iced = { git = "https://github.com/iced-rs/iced", rev = "0a34496"}
 
-tokio = { version = "1.47.1", features = ["fs"] }
-
 # Error handling
 anyhow = "1.0.100"
 

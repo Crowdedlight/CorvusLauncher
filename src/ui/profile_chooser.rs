@@ -17,19 +17,20 @@ pub enum Message {
 
 impl ProfileChooser {
 
-    pub fn new() -> ProfileChooser {
+    pub fn new(profiles: Vec<String>) -> ProfileChooser {
 
-        // TODO get list of all profile options from A3 master dir
-        // TODO we might just hardcode instead, to avoid the ownership challenge and be able to make new profile?
-        //  (We could store options in configs, and allow to add new profiles from UI)
-
-        Self {selected : Some("ServerNormal".parse().unwrap()), options : vec!["ServerLib".parse().unwrap(), "ServerATF".parse().unwrap(), "ServerEvent".parse().unwrap(), "ServerNormal".parse().unwrap()]} // TODO debugging
+        // get initial profiles from config
+        Self {
+            selected : Some(profiles.first().unwrap().clone()),
+            options : profiles}
     }
     pub fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
 
+        // TODO add gui to add new server profiles?
+
         column![
             text("Server Profile").size(24),
-            pick_list(self.options.clone(), self.selected.clone(), Message::ProfileSelected)
+            pick_list(self.options.clone(), self.selected.clone(), Message::ProfileSelected),
         ]
             .align_x(Horizontal::Center)
             .spacing(4)

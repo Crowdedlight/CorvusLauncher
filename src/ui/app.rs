@@ -60,7 +60,7 @@ impl App {
             time_elapsed: Duration::ZERO,
             errors: Errors::default(),
             hc_launch_num: NumberInput::default(),
-            server_profile_chooser: ProfileChooser::new(),
+            server_profile_chooser: ProfileChooser::new(configs.clone().read().unwrap().server_profiles.clone()),
             welcome_view: WelcomeView::new(configs.clone()),
             config: configs,
             cli,
