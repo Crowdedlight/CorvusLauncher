@@ -19,7 +19,7 @@ impl ProfileChooser {
     pub fn new(profiles: Vec<String>) -> ProfileChooser {
         // get initial profiles from config
         Self {
-            selected: Some(profiles.first().unwrap().clone()),
+            selected: profiles.first().map(|p| p.to_owned().clone()),
             options: profiles,
         }
     }
@@ -46,5 +46,9 @@ impl ProfileChooser {
                 Task::none()
             }
         }
+    }
+
+    pub fn get_selected_profile(&self) -> String {
+        self.selected.clone().expect("No selected profile")
     }
 }

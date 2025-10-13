@@ -28,20 +28,18 @@ pub struct WelcomeView {
     config: Arc<RwLock<Config>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Message {
     /// open file dialog
     ConfigOpenFileDialog(LocationPaths),
     /// save new config values
     SaveUpdateConfig(PathBuf, PathBuf, PathBuf, PathBuf),
+    /// reload views depending on config values
+    ReloadViews(),
 }
 
 impl WelcomeView {
     pub fn new(config: Arc<RwLock<Config>>) -> WelcomeView {
-        // TODO get list of all profile options from A3 master dir
-        // TODO we might just hardcode instead, to avoid the ownership challenge and be able to make new profile?
-        //  (We could store options in configs, and allow to add new profiles from UI)
-
         // load initial values from config
         let c = config.read().unwrap();
         Self {
@@ -147,6 +145,9 @@ impl WelcomeView {
                     clientsides,
                     servermods,
                 );
+                Task::done(Message::ReloadViews())
+            }
+            Message::ReloadViews() => {
                 Task::none()
             }
         }

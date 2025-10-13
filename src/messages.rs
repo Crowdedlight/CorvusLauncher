@@ -27,6 +27,12 @@ pub enum Message {
     ServerProfileChanged(ui::profile_chooser::Message),
     /// welcome view messages
     WelcomeViewMessage(ui::welcome_message::Message),
+    /// port number change message
+    ChangePortNumber(String),
+    /// Launch server
+    LaunchServer(),
+    /// Launch HCs
+    LaunchHCs(),
 
     /// An error occured, display to the user
     Error(String),

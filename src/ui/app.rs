@@ -1,14 +1,17 @@
+use std::cmp::PartialEq;
 use crate::messages::Message;
 use crate::{Cli, Config, ServerModList};
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::space::{horizontal, vertical};
-use iced::widget::{Button, Stack, rule, slider, space};
+use iced::widget::{Button, Stack, rule, slider, space, text_input};
 use iced::widget::{Rule, Space, button, column, container, progress_bar, row, scrollable, text};
 use iced::{Element, Length, Task};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
+use crate::arma::server_launch::{launch_hc, launch_server};
+use crate::arma::server_modlist::load_modlists;
 // use crate::Config;
 
 use super::Errors;
@@ -23,7 +26,7 @@ use crate::ui::welcome_message::WelcomeView;
 pub struct App {
     /// When the application was launched
     pub time_started: Instant,
-    /// How long has passed since starting ferrishot
+    /// How long has passed since starting
     pub time_elapsed: Duration,
     /// Config of the app
     pub config: Arc<RwLock<Config>>,
@@ -31,6 +34,8 @@ pub struct App {
     pub errors: Errors,
     /// Command line arguments passed
     pub cli: Arc<Cli>,
+    /// port number for server and HC
+    pub port_num: String,
 
     // Currently opened popup
     // pub popup: Option<Popup>,
@@ -46,10 +51,29 @@ pub struct App {
     /// welcome message - aka set config
     pub welcome_view: WelcomeView,
 }
+
+
 #[bon::bon]
 impl App {
     #[builder]
     pub fn new(cli: Arc<Cli>, configs: Arc<RwLock<Config>>) -> Self {
+
+        // make empty vectors
+        let mut modpacks: Vec<ServerModList> = vec![];
+        let mut clientside: Vec<ServerModList> = vec![];
+        let mut servermod: Vec<ServerModList> = vec![];
+
+        // try and load modlists from folders if config is valid
+        let c = configs.clone();
+        if c.read().unwrap().is_config_valid() {
+            // modpacks
+            modpacks = load_modlists(&c.read().unwrap().folder_modlists);
+            // clientsides
+            clientside = load_modlists(&c.read().unwrap().folder_clientside);
+            // servermods
+            servermod = load_modlists(&c.read().unwrap().folder_servermods);
+        }
+
         Self {
             time_started: Instant::now(),
             time_elapsed: Duration::ZERO,
@@ -61,46 +85,24 @@ impl App {
             welcome_view: WelcomeView::new(configs.clone()),
             config: configs,
             cli,
+            port_num: "2302".to_string(),
             // popup: None,
             // TODO, delete default testing
             selection_listboxes: vec![
                 SelectionListbox::new(
                     0,
                     "Modpacks".parse().unwrap(),
-                    vec![
-                        ServerModList::new("Modern".parse().unwrap(), PathBuf::new(), false),
-                        ServerModList::new("Cold War".parse().unwrap(), PathBuf::new(), false),
-                        ServerModList::new("WW2".parse().unwrap(), PathBuf::new(), false),
-                        ServerModList::new("Scifi".parse().unwrap(), PathBuf::new(), false),
-                    ],
+                    modpacks,
                 ),
                 SelectionListbox::new(
                     1,
                     "Clientside".parse().unwrap(),
-                    vec![
-                        ServerModList::new(
-                            "Clientside Normal".parse().unwrap(),
-                            PathBuf::new(),
-                            false,
-                        ),
-                        ServerModList::new(
-                            "Clientside Big Event".parse().unwrap(),
-                            PathBuf::new(),
-                            false,
-                        ),
-                    ],
+                    clientside,
                 ),
                 SelectionListbox::new(
                     2,
                     "Server mods".parse().unwrap(),
-                    vec![
-                        ServerModList::new("OCAP2".parse().unwrap(), PathBuf::new(), false),
-                        ServerModList::new(
-                            "Advanced Slingloading".parse().unwrap(),
-                            PathBuf::new(),
-                            false,
-                        ),
-                    ],
+                    servermod,
                 ),
             ],
         }
@@ -147,14 +149,23 @@ impl App {
                         .view(self)
                         .map(move |msg| Message::ServerProfileChanged(msg)),
                     horizontal().width(20),
-                    button("LAUNCH SERVER").padding(10),
+                    column![
+                        text("Port").size(24),
+                        text_input("", &*self.port_num).on_input(Message::ChangePortNumber)
+                            .width(60)
+                            // .size(20)
+                            .align_x(Horizontal::Center),
+                        button("LAUNCH SERVER").padding(10).on_press(Message::LaunchServer()),
+                    ]
+                        .align_x(Horizontal::Center)
+                        .spacing(4),
                     horizontal().width(20),
                     column![
                         text("HCs Amount").size(24),
                         self.hc_launch_num
                             .view(self)
                             .map(move |message| Message::HcInputChanged(message)),
-                        button("LAUNCH HCs").padding(10),
+                        button("LAUNCH HCs").padding(10).on_press(Message::LaunchHCs()),
                     ]
                     .align_x(Horizontal::Center)
                     .spacing(4)
@@ -196,7 +207,58 @@ impl App {
                 self.server_profile_chooser.update(msg);
             }
             Message::WelcomeViewMessage(msg) => {
+
+                // handle specific reload message that has to run in parent view
+                if msg == ui::welcome_message::Message::ReloadViews() {
+                    // Reload views depending on config values, such as the listboxes
+                    let c = self.config.clone();
+                    let modlist = load_modlists(&c.read().unwrap().folder_modlists);
+                    let clientside = load_modlists(&c.read().unwrap().folder_clientside);
+                    let servermods = load_modlists(&c.read().unwrap().folder_servermods);
+
+                    self.selection_listboxes.get_mut(0).unwrap().elements = modlist;
+                    self.selection_listboxes.get_mut(1).unwrap().elements = clientside;
+                    self.selection_listboxes.get_mut(2).unwrap().elements = servermods;
+                }
+
+                // pass message on
                 self.welcome_view.update(msg);
+            }
+            Message::ChangePortNumber(new_port) => {
+                self.port_num = new_port;
+            }
+            Message::LaunchServer() => {
+                // combine selected mods
+                let everyone_mods: Vec<PathBuf> = self.selection_listboxes.get(0).unwrap().elements.iter().filter(|e| e.selected).flat_map(|e| e.mods.clone()).collect();
+                let clientside_mods: Vec<PathBuf> = self.selection_listboxes.get(1).unwrap().elements.iter().filter(|e| e.selected).flat_map(|e| e.mods.clone()).collect();
+                let server_mods: Vec<PathBuf> = self.selection_listboxes.get(2).unwrap().elements.iter().filter(|e| e.selected).flat_map(|e| e.mods.clone()).collect();
+
+                let c = self.config.clone();
+
+                // launch server
+                launch_server(
+                    &c.read().unwrap().a3_root,
+                    &c.read().unwrap().a3_server_executable,
+                    &self.port_num,
+                    &self.server_profile_chooser.get_selected_profile(),
+                    everyone_mods,
+                    clientside_mods,
+                    server_mods,
+                );
+            }
+            Message::LaunchHCs() => {
+                // get config
+                let c = self.config.clone();
+
+                // launch HCs
+                for i in 0 .. self.hc_launch_num.value {
+                    launch_hc(
+                        &c.read().unwrap().a3_root,
+                        &c.read().unwrap().a3_server_executable,
+                        &self.port_num,
+                        i
+                    );
+                }
             }
         }
 

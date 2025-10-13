@@ -1,8 +1,8 @@
-use crate::arma::preset;
 use anyhow::Result;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use crate::ServerModList;
 
 static LOADED_MODS_FILE: &str = "corvuslauncher_loaded_mods.txt";
 
@@ -74,15 +74,16 @@ fn remove_dir_contents_but_a3key(path: &PathBuf) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// launch server with given parameters
+/// launch server with given parameters. It expects a single combined ServerModList for all the
+/// selected mods. So ensure to filter and combine them into single entity before calling this
 pub fn launch_server(
-    a3root: PathBuf,
-    a3_executable: PathBuf,
-    port: u64,
+    a3root: &PathBuf,
+    a3_executable: &PathBuf,
+    port: &str,
     server_profile: &str,
-    modlist: preset::Preset,
-    clientsides: preset::Preset,
-    server_mods: preset::Preset,
+    modlist: Vec<PathBuf>,
+    clientsides: Vec<PathBuf>,
+    server_mods: Vec<PathBuf>,
 ) -> Result<()> {
     let keys_folder = a3root.clone().join("keys");
     let par_modlist = a3root.clone().join(LOADED_MODS_FILE);
@@ -95,7 +96,7 @@ pub fn launch_server(
     let mut missing_keys: Vec<String> = Vec::new();
 
     // find list of bikeys for all mods, clientsides, modlist and server-mods. Make into one big vec
-    let server_and_clientsides = [modlist.mods.clone(), clientsides.mods].concat();
+    let server_and_clientsides = [modlist.clone(), clientsides].concat();
 
     for modpath in server_and_clientsides.iter() {
         // try and find bikeys
@@ -121,11 +122,10 @@ pub fn launch_server(
     }
 
     // build parameter file for server mods
-    build_mods_launch_file(modlist.mods, &par_modlist)?;
+    build_mods_launch_file(modlist, &par_modlist)?;
 
     // build string for server mods
     let server_mod_string_vec: Vec<String> = server_mods
-        .mods
         .iter()
         .map(|entry| String::from(entry.to_string_lossy()))
         .collect();
@@ -157,7 +157,7 @@ pub fn launch_server(
     Ok(())
 }
 
-pub fn launch_hc(a3root: PathBuf, a3_executable: PathBuf, port: u64, index: u8) -> Result<()> {
+pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u64) -> Result<()> {
     // get server password as we need to pass it to HC
     let server_password = get_server_password_from_config(find_config(&a3root)?)?;
 

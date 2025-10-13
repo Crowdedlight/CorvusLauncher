@@ -16,7 +16,7 @@ static A3_SERVER_BINARY_NAME: &str = "arma3server_x64";
 #[cfg(target_os = "windows")]
 static A3_SERVER_BINARY_NAME: &str = "arma3server_x64.exe";
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum LocationPaths {
     A3Root,
     Modlists,
