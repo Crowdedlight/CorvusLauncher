@@ -44,6 +44,8 @@ pub struct Errors {
     pub errors: Vec<ErrorMessage>,
 }
 
+// TODO Errors not being shown atm, figure out why
+
 impl Errors {
     pub fn push<T: Into<Cow<'static, str>> + std::fmt::Display>(&mut self, error: T) {
         self.errors.push(ErrorMessage::new(error));

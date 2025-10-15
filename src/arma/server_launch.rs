@@ -1,27 +1,35 @@
 use anyhow::Result;
 use std::fs;
+use std::fs::metadata;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use crate::ServerModList;
+use glob::{glob_with, MatchOptions};
 
 static LOADED_MODS_FILE: &str = "corvuslauncher_loaded_mods.txt";
 
 pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
-    // search all subfiles for a .bikey
-    let keys = std::fs::read_dir(path)?
-        // Filter out all those directory entries which couldn't be read
-        .filter_map(|res| res.ok())
-        // Map the directory entries to paths
-        .map(|dir_entry| dir_entry.path())
-        // Filter out all paths with extensions other than `csv`
-        .filter_map(|path| {
-            if path.extension().is_some_and(|ext| ext == "bikey") {
-                Some(path)
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>();
+
+    //
+    let options = MatchOptions {
+        case_sensitive: false,
+        ..Default::default()
+    };
+
+    let mut keys: Vec<PathBuf> = Vec::new();
+
+    let search_pattern = format!("{}\\**\\*.bikey", path.to_string_lossy());
+    for entry in glob_with(&search_pattern, options)? {
+
+        let p = entry?.to_path_buf();
+
+        // custom handling, do not include \optionals\ from ACE
+        if p.to_str().unwrap().contains("optionals") {
+            continue;
+        }
+
+        keys.push(p);
+    }
 
     // Logging
     log::debug!(
@@ -67,7 +75,7 @@ fn remove_dir_contents_but_a3key(path: &PathBuf) -> anyhow::Result<()> {
     for entry in fs::read_dir(path)? {
         let file = entry?;
         // do not remove a3.bikey, as that should always be there
-        if !file.file_name().eq("a3") {
+        if !file.file_name().eq("a3.bikey") {
             fs::remove_file(file.path())?;
         }
     }
@@ -99,8 +107,12 @@ pub fn launch_server(
     let server_and_clientsides = [modlist.clone(), clientsides].concat();
 
     for modpath in server_and_clientsides.iter() {
+
+        // make absolute path from relative
+        let full_path = a3root.clone().join(modpath);
+
         // try and find bikeys
-        match find_bikey(modpath) {
+        match find_bikey(&full_path) {
             Ok(mut path) => {
                 bikeys.append(&mut path);
             }
@@ -118,7 +130,7 @@ pub fn launch_server(
 
     // no keys are missing, we can continue by copying keys to the a3root/keys folder
     for p in bikeys.iter() {
-        fs::copy(p, &keys_folder)?;
+        fs::copy(p, keys_folder.clone().join(p.file_name().unwrap()))?;
     }
 
     // build parameter file for server mods
@@ -130,58 +142,41 @@ pub fn launch_server(
         .map(|entry| String::from(entry.to_string_lossy()))
         .collect();
 
-    // keys sorted, mods collected, time to build the launch string
-    let server_launch_string = format!(
-        "{server_exe:?} -port={port} -hugepages -maxMem=30000 -maxFileCacheSize=8192 -enableHT -bandwidthAlg=2 -limitFPS=1000 -loadMissionToMemory \
-        -profiles={profile} -name=server -config={server_config} -cfg={network_cfg} -world=empty -serverMod=\"{server_mods}\" -par={modfile}",
-        server_exe = a3_executable.to_string_lossy(),
-        port = port,
-        profile = a3root.clone().join(server_profile).to_string_lossy(),
-        server_config = find_config(&a3root)?.to_string_lossy(),
-        network_cfg = a3root
-            .clone()
-            .join(server_profile)
-            .join("Users/server/Arma3.cfg")
-            .to_string_lossy(), //$a3root\$serverprofile\Users\server\Arma3.cfg
-        server_mods = server_mod_string_vec.join(";"),
-        modfile = par_modlist.to_string_lossy()
-    );
-
     // launch HC and null stdin, out and error, to fork and disown process. We should be able to close launcher without killing server
-    Command::new(server_launch_string)
+    Command::new(a3_executable)
+        .args(["-port", port])
+        .args(["-hugepages", "-maxMem=30000", "-maxFileCacheSize=8192", "-enableHT", "-bandwidthAlg=2", "-limitFPS=1000", "-loadMissionToMemory"])
+        .args(["-name=server", "-world=empty"])
+        .args(["-profiles", &a3root.clone().join(server_profile).to_string_lossy()])
+        .args(["-config=", &find_config(&a3root)?.to_string_lossy()])
+        .args(["-cfg=", &a3root.clone().join(server_profile).join("Users").join("server").join("Arma3.cfg").to_string_lossy()])
+        .args(["-serverMod=", &server_mod_string_vec.join(";")])
+        .args(["-par=", &par_modlist.to_string_lossy()])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .spawn()?;
+        .spawn().unwrap();
 
     Ok(())
 }
 
+/// launch function for Headless
 pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u64) -> Result<()> {
     // get server password as we need to pass it to HC
     let server_password = get_server_password_from_config(find_config(&a3root)?)?;
 
-    // build HC launch string and launch process....
-    let hc_launch_string = format!(
-        "{server_exe:?} -client -port={port}, -password={password}, -profiles={profile} -name=hc{index} -par={modfile}",
-        server_exe = a3_executable.to_string_lossy(),
-        port = port,
-        password = server_password,
-        profile = a3root
-            .clone()
-            .join(format!("headlessProfile{}", index))
-            .to_string_lossy(),
-        index = index,
-        modfile = a3root.join(LOADED_MODS_FILE).to_string_lossy()
-    );
-
     // launch HC and null stdin, out and error, to fork and disown process. We should be able to close launcher without killing hcs
-    Command::new(hc_launch_string)
+    Command::new(a3_executable)
+        .args(["-port", port])
+        .arg("-client")
+        .args(["-password=", &server_password])
+        .args(["-profiles", &a3root.clone().join(format!("headlessProfile{}", index)).to_string_lossy()])
+        .args(["-name=", &format!("hc{}", index)])
+        .args(["-par=", &a3root.join(LOADED_MODS_FILE).to_string_lossy()])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()?;
-
     Ok(())
 }
 

@@ -118,10 +118,9 @@ impl Config {
         log::debug!("Updated folder_servermods to: {:?}", self.folder_servermods);
 
         // update file on disk, by just overwriting it with current configs. (Don't support external file changes without a restart)
-        let config = Config::default();
         fs::write(
             &*DEFAULT_CONFIG_FILE_PATH,
-            toml::to_string(&config).unwrap(),
+            toml::to_string(&self).unwrap(),
         )?;
 
         log::info!("Updated configs");

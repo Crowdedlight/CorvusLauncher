@@ -28,3 +28,5 @@ pub fn initialize(cli: &crate::Cli) {
         }
     }
 }
+
+// TODO fix logging not being written to log file

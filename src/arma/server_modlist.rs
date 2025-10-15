@@ -15,7 +15,7 @@ impl ServerModList {
 
         // parse file with given path
         let raw_file = read_to_string(&path).expect("File not found");
-        let mods: Vec<PathBuf> = raw_file.split(";").map(PathBuf::from).collect();
+        let mods: Vec<PathBuf> = raw_file.split_terminator(";").map(PathBuf::from).collect();
 
         Self {
             name,

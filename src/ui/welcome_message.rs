@@ -148,6 +148,8 @@ impl WelcomeView {
                 Task::done(Message::ReloadViews())
             }
             Message::ReloadViews() => {
+                //todo reload views
+                log::debug!("ReloadViews() called");
                 Task::none()
             }
         }
