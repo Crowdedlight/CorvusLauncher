@@ -201,10 +201,10 @@ impl App {
                 }
             }
             Message::HcInputChanged(msg) => {
-                self.hc_launch_num.update(msg);
+                return self.hc_launch_num.update(msg).map(Message::HcInputChanged);
             }
             Message::ServerProfileChanged(msg) => {
-                self.server_profile_chooser.update(msg);
+                return self.server_profile_chooser.update(msg).map(Message::ServerProfileChanged);
             }
             Message::WelcomeViewMessage(msg) => {
 
@@ -221,8 +221,8 @@ impl App {
                     self.selection_listboxes.get_mut(2).unwrap().elements = servermods;
                 }
 
-                // pass message on
-                self.welcome_view.update(msg);
+                // pass message on, has to return here as otherwise we would never get messages initiated in WelcomeViewMessage update()
+                return self.welcome_view.update(msg).map(Message::WelcomeViewMessage);
             }
             Message::ChangePortNumber(new_port) => {
                 self.port_num = new_port;

@@ -87,7 +87,7 @@ impl WelcomeView {
                     self.modlists.clone(),
                     self.clientsides.clone(),
                     self.servermods.clone()
-                )),)
+                )))
                 .center_x(Length::Fill)
             ])
             .center_y(Length::Fixed(450.0))
@@ -145,6 +145,8 @@ impl WelcomeView {
                     clientsides,
                     servermods,
                 );
+                // TODO the right way here would be to have this class depend on reference to config and its paths, as then change of paths would trigger a reload of files
+                //  but if this works for now, we leave it be, as the other is a bigger change
                 Task::done(Message::ReloadViews())
             }
             Message::ReloadViews() => {
