@@ -60,7 +60,7 @@ jobs:
         shell: bash
         run: |
           # Replace with the name of your binary
-          binary_name="amdu"
+          binary_name="corvus_launcher"
 
           dirname="$binary_name-${{ env.VERSION }}-${{ matrix.name }}"
           mkdir "$dirname"
