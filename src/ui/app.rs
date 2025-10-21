@@ -99,7 +99,7 @@ impl App {
             welcome_view = Some(
                 self.welcome_view
                     .view(self)
-                    .map(move |msg| Message::WelcomeViewMessage(msg)),
+                    .map(Message::WelcomeViewMessage),
             );
         }
 
@@ -129,11 +129,11 @@ impl App {
                 row![
                     self.server_profile_chooser
                         .view(self)
-                        .map(move |msg| Message::ServerProfileChanged(msg)),
+                        .map(Message::ServerProfileChanged),
                     horizontal().width(20),
                     column![
                         text("Port").size(24),
-                        text_input("", &*self.port_num)
+                        text_input("", &self.port_num)
                             .on_input(Message::ChangePortNumber)
                             .width(60)
                             // .size(20)
@@ -149,7 +149,7 @@ impl App {
                         text("HCs Amount").size(24),
                         self.hc_launch_num
                             .view(self)
-                            .map(move |message| Message::HcInputChanged(message)),
+                            .map(Message::HcInputChanged),
                         button("LAUNCH HCs")
                             .padding(10)
                             .on_press(Message::LaunchHCs()),
@@ -224,8 +224,7 @@ impl App {
             Message::LaunchServer() => {
                 // combine selected mods
                 let everyone_mods: Vec<PathBuf> = self
-                    .selection_listboxes
-                    .get(0)
+                    .selection_listboxes.first()
                     .unwrap()
                     .elements
                     .iter()

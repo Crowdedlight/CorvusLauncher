@@ -1,8 +1,6 @@
-use crate::ServerModList;
 use anyhow::Result;
 use glob::{MatchOptions, glob_with};
 use std::fs;
-use std::fs::metadata;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -58,7 +56,7 @@ pub fn build_mods_launch_file(mods: Vec<PathBuf>, output_file: &PathBuf) -> Resu
     }
 
     // save file
-    fs::write(&output_file, mod_string)?;
+    fs::write(output_file, mod_string)?;
 
     log::info!("Build server modlist and saved to parameter file");
     log::debug!(
@@ -156,7 +154,7 @@ pub fn launch_server(
             "-profiles",
             &a3root.clone().join(server_profile).to_string_lossy(),
         ])
-        .args(["-config=", &find_config(&a3root)?.to_string_lossy()])
+        .args(["-config=", &find_config(a3root)?.to_string_lossy()])
         .args([
             "-cfg=",
             &a3root
@@ -172,8 +170,7 @@ pub fn launch_server(
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .spawn()
-        .unwrap();
+        .spawn()?;
 
     Ok(())
 }
@@ -181,7 +178,7 @@ pub fn launch_server(
 /// launch function for Headless
 pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u64) -> Result<()> {
     // get server password as we need to pass it to HC
-    let server_password = get_server_password_from_config(find_config(&a3root)?)?;
+    let server_password = get_server_password_from_config(find_config(a3root)?)?;
 
     // launch HC and null stdin, out and error, to fork and disown process. We should be able to close launcher without killing hcs
     Command::new(a3_executable)
@@ -233,13 +230,12 @@ pub fn get_server_password_from_config(a3_config: PathBuf) -> Result<String> {
 
     // find and extract the password string from: password = "thepassword";
     for l in config_string.lines() {
-        if l.starts_with("password") {
-            if let Some((password, _)) =
+        if l.starts_with("password")
+            && let Some((password, _)) =
                 l[8..].replacen("=", "", 1).replace('"', "").split_once(";")
             {
                 return Ok(password.trim().to_string());
             }
-        }
     }
 
     Err(anyhow::Error::msg(
@@ -262,26 +258,3 @@ mod tests {
         assert_eq!(server_password, "passwordcanbe=anything");
     }
 }
-
-// example of HC and server launch commands
-//  D:\ArmaServer\A3Master\arma3server_x64.exe -client -port=2302  -password=Ariadne -profiles=D:\ArmaServer\A3Master\headlessProfile -name=hc2 -par="D:\ArmaServer\A3Files\modsSOG+.txt"
-//  D:\ArmaServer\A3Master\arma3server_x64.exe -client -port=2302  -password=Ariadne -profiles=D:\ArmaServer\A3Master\headlessProfile -name=hc1 -par="D:\ArmaServer\A3Files\modsSOG+.txt"
-// server launch string
-//  launchModpack.ps1 -servermods "D:\ArmaServer\A3Files\modsMW25.txt" -clientmods "D:\ArmaServer\A3Files\modsCLIENT25.txt" -sprofile "serverProfile"
-// launch command in script
-// Start-Process -NoNewWindow -FilePath "D:\ArmaServer\A3Master\arma3server_x64.exe" -ArgumentList ("
-//         -port=2302
-//         -hugepages
-//         -maxMem=30000
-//         -maxFileCacheSize=8192
-//         -enableHT
-//         -bandwidthAlg=2
-//         -limitFPS=1000
-//         -loadMissionToMemory
-//         -profiles=D:\ArmaServer\A3Master\$sprofile
-//         -name=server
-//         -config=D:\ArmaServer\A3Master\server.cfg
-//         -cfg=$a3root\$serverprofile\Users\server\Arma3.cfg    => D:\ArmaServer\A3Master\serverProfile\Users\server\Arma3.cfg
-//         -world=empty
-//         -serverMod=`"@ocap;mods\@Advanced Sling Loading`"
-//         -par="+$servermods)

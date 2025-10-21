@@ -1,7 +1,7 @@
 use iced::alignment::Horizontal;
 use iced::alignment::Vertical;
 use iced::widget::{button, row, text};
-use iced::{Element, Length, Task};
+use iced::{Element, Task};
 
 #[derive(Debug, Default)]
 pub struct NumberInput {

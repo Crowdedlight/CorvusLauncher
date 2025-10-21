@@ -3,9 +3,6 @@ use crate::configs::config::DEFAULT_LOG_FILE_PATH;
 use clap::Parser;
 use clap::ValueHint;
 use clap::builder::styling::{AnsiColor, Effects};
-use etcetera::BaseStrategy;
-use std::path::PathBuf;
-use std::sync::LazyLock;
 
 // styling for errors
 const STYLES: clap::builder::Styles = clap::builder::Styles::styled()
@@ -42,7 +39,7 @@ pub struct Cli {
         help_heading = "Debug",
         long,
         value_name = "LEVEL",
-        default_value = "error",
+        default_value = "info",
         long_help = "Choose a minimum level at which to log. [error, warn, info, debug, trace, off]",
         hide = !cfg!(feature = "debug")
     )]

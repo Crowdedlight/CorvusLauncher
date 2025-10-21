@@ -1,14 +1,11 @@
-use crate::messages::Message;
-use etcetera::{AppStrategyArgs, BaseStrategy, choose_app_strategy};
-use iced::Task;
+use etcetera::BaseStrategy;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::default::Default;
 use std::fs::exists;
 use std::path::PathBuf;
 use std::string::ToString;
-use std::sync::{Arc, LazyLock, Mutex, RwLock};
-use std::{fmt, fs};
+use std::sync::LazyLock;
+use std::fs;
 
 /// Arma server binary name depending on platform
 #[cfg(target_os = "linux")]
@@ -71,7 +68,7 @@ impl Config {
 
         // Read the configs file and store in struct
         let raw_config = fs::read_to_string(config_path).expect("Could not read configs file");
-        let config: Config = toml::from_str(&*raw_config).expect("Could not parse configs file");
+        let config: Config = toml::from_str(&raw_config).expect("Could not parse configs file");
 
         config
     }

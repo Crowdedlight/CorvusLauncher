@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 build = "build.rs"
 
+[features]
+debug = []
+
 [dependencies]
 #iced = "0.13.1"
 iced = { git = "https://github.com/iced-rs/iced", rev = "0a34496"}
