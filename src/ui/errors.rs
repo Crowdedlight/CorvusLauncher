@@ -2,8 +2,11 @@
 
 use crate::messages::Message;
 
-use iced::widget::{button, scrollable, space, Container};
-use iced::{Background, Color, Element, widget::{self, Column, column, Space, container, row}, Length};
+use iced::widget::{Container, button, scrollable, space};
+use iced::{
+    Background, Color, Element, Length,
+    widget::{self, Column, Space, column, container, row},
+};
 use std::{
     borrow::Cow,
     time::{Duration, Instant},
@@ -44,8 +47,11 @@ impl Errors {
     }
 
     // Show errors on the screen
-    pub fn view<'app>(&self, app: &'app super::App, on_clear: impl Fn() -> Message) -> Option<Element<'app, Message>> {
-
+    pub fn view<'app>(
+        &self,
+        app: &'app super::App,
+        on_clear: impl Fn() -> Message,
+    ) -> Option<Element<'app, Message>> {
         // if no errors, we just return
         if self.errors.is_empty() {
             return None;
@@ -76,16 +82,15 @@ impl Errors {
             .width(ERROR_WIDTH)
             .spacing(30);
 
-        Some(container(
+        Some(
             container(
-                column![
+                container(column![
                     scrollable(errors),
                     container(button("Clear Errors").on_press(on_clear()))
-                    .align_bottom(Length::Fill)
-                    .align_right(Length::Fill)
-                    .padding(20)
-                ]
-            )
+                        .align_bottom(Length::Fill)
+                        .align_right(Length::Fill)
+                        .padding(20)
+                ])
                 .align_left(Length::Fixed(620.0))
                 .align_top(Length::Fixed(450.0))
                 .style(|_| iced::widget::container::Style {
@@ -97,8 +102,8 @@ impl Errors {
                         .width(1.5),
                     shadow: iced::Shadow::default(),
                     snap: false,
-                })
-        )
+                }),
+            )
             .center(Length::Fill)
             .style(|_| iced::widget::container::Style {
                 // text_color: Some(app.config.theme.info_box_fg),
@@ -110,6 +115,8 @@ impl Errors {
                     .width(1.5),
                 shadow: iced::Shadow::default(),
                 snap: false,
-            }).into())
+            })
+            .into(),
+        )
     }
 }

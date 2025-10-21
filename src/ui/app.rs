@@ -1,4 +1,5 @@
-use std::cmp::PartialEq;
+use crate::arma::server_launch::{launch_hc, launch_server};
+use crate::arma::server_modlist::load_modlists;
 use crate::messages::Message;
 use crate::{Cli, Config, ServerModList};
 use iced::alignment::{Horizontal, Vertical};
@@ -6,12 +7,11 @@ use iced::widget::space::{horizontal, vertical};
 use iced::widget::{Button, Stack, rule, slider, space, text_input};
 use iced::widget::{Rule, Space, button, column, container, progress_bar, row, scrollable, text};
 use iced::{Element, Length, Task};
+use std::cmp::PartialEq;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
-use crate::arma::server_launch::{launch_hc, launch_server};
-use crate::arma::server_modlist::load_modlists;
 // use crate::Config;
 
 use super::Errors;
@@ -52,12 +52,10 @@ pub struct App {
     pub welcome_view: WelcomeView,
 }
 
-
 #[bon::bon]
 impl App {
     #[builder]
     pub fn new(cli: Arc<Cli>, configs: Arc<RwLock<Config>>) -> Self {
-
         // make empty vectors
         let mut modpacks: Vec<ServerModList> = vec![];
         let mut clientside: Vec<ServerModList> = vec![];
@@ -88,21 +86,9 @@ impl App {
             port_num: "2302".to_string(),
             // popup: None,
             selection_listboxes: vec![
-                SelectionListbox::new(
-                    0,
-                    "Modpacks".parse().unwrap(),
-                    modpacks,
-                ),
-                SelectionListbox::new(
-                    1,
-                    "Clientside".parse().unwrap(),
-                    clientside,
-                ),
-                SelectionListbox::new(
-                    2,
-                    "Server mods".parse().unwrap(),
-                    servermod,
-                ),
+                SelectionListbox::new(0, "Modpacks".parse().unwrap(), modpacks),
+                SelectionListbox::new(1, "Clientside".parse().unwrap(), clientside),
+                SelectionListbox::new(2, "Server mods".parse().unwrap(), servermod),
             ],
         }
     }
@@ -150,21 +136,26 @@ impl App {
                     horizontal().width(20),
                     column![
                         text("Port").size(24),
-                        text_input("", &*self.port_num).on_input(Message::ChangePortNumber)
+                        text_input("", &*self.port_num)
+                            .on_input(Message::ChangePortNumber)
                             .width(60)
                             // .size(20)
                             .align_x(Horizontal::Center),
-                        button("LAUNCH SERVER").padding(10).on_press(Message::LaunchServer()),
+                        button("LAUNCH SERVER")
+                            .padding(10)
+                            .on_press(Message::LaunchServer()),
                     ]
-                        .align_x(Horizontal::Center)
-                        .spacing(4),
+                    .align_x(Horizontal::Center)
+                    .spacing(4),
                     horizontal().width(20),
                     column![
                         text("HCs Amount").size(24),
                         self.hc_launch_num
                             .view(self)
                             .map(move |message| Message::HcInputChanged(message)),
-                        button("LAUNCH HCs").padding(10).on_press(Message::LaunchHCs()),
+                        button("LAUNCH HCs")
+                            .padding(10)
+                            .on_press(Message::LaunchHCs()),
                     ]
                     .align_x(Horizontal::Center)
                     .spacing(4)
@@ -181,7 +172,6 @@ impl App {
 
     /// Modifies the app's state
     pub fn update(&mut self, message: Message) -> Task<Message> {
-
         match message {
             // Message::ClosePopup => {
             //     self.popup = None;
@@ -199,10 +189,12 @@ impl App {
                 return self.hc_launch_num.update(msg).map(Message::HcInputChanged);
             }
             Message::ServerProfileChanged(msg) => {
-                return self.server_profile_chooser.update(msg).map(Message::ServerProfileChanged);
+                return self
+                    .server_profile_chooser
+                    .update(msg)
+                    .map(Message::ServerProfileChanged);
             }
             Message::WelcomeViewMessage(msg) => {
-
                 // handle specific reload message that has to run in parent view
                 if msg == ui::welcome_message::Message::ReloadViews() {
                     // Reload views depending on config values, such as the listboxes
@@ -217,16 +209,43 @@ impl App {
                 }
 
                 // pass message on, has to return here as otherwise we would never get messages initiated in WelcomeViewMessage update()
-                return self.welcome_view.update(msg).map(Message::WelcomeViewMessage);
+                return self
+                    .welcome_view
+                    .update(msg)
+                    .map(Message::WelcomeViewMessage);
             }
             Message::ChangePortNumber(new_port) => {
                 self.port_num = new_port;
             }
             Message::LaunchServer() => {
                 // combine selected mods
-                let everyone_mods: Vec<PathBuf> = self.selection_listboxes.get(0).unwrap().elements.iter().filter(|e| e.selected).flat_map(|e| e.mods.clone()).collect();
-                let clientside_mods: Vec<PathBuf> = self.selection_listboxes.get(1).unwrap().elements.iter().filter(|e| e.selected).flat_map(|e| e.mods.clone()).collect();
-                let server_mods: Vec<PathBuf> = self.selection_listboxes.get(2).unwrap().elements.iter().filter(|e| e.selected).flat_map(|e| e.mods.clone()).collect();
+                let everyone_mods: Vec<PathBuf> = self
+                    .selection_listboxes
+                    .get(0)
+                    .unwrap()
+                    .elements
+                    .iter()
+                    .filter(|e| e.selected)
+                    .flat_map(|e| e.mods.clone())
+                    .collect();
+                let clientside_mods: Vec<PathBuf> = self
+                    .selection_listboxes
+                    .get(1)
+                    .unwrap()
+                    .elements
+                    .iter()
+                    .filter(|e| e.selected)
+                    .flat_map(|e| e.mods.clone())
+                    .collect();
+                let server_mods: Vec<PathBuf> = self
+                    .selection_listboxes
+                    .get(2)
+                    .unwrap()
+                    .elements
+                    .iter()
+                    .filter(|e| e.selected)
+                    .flat_map(|e| e.mods.clone())
+                    .collect();
 
                 let c = self.config.clone();
 
@@ -242,7 +261,7 @@ impl App {
                 );
                 // handle error
                 if let Err(err) = launch_result {
-                    return Task::done(Message::Error(err.to_string()))
+                    return Task::done(Message::Error(err.to_string()));
                 }
             }
             Message::LaunchHCs() => {
@@ -250,17 +269,17 @@ impl App {
                 let c = self.config.clone();
 
                 // launch HCs
-                for i in 0 .. self.hc_launch_num.value {
+                for i in 0..self.hc_launch_num.value {
                     let launch_result = launch_hc(
                         &c.read().unwrap().a3_root,
                         &c.read().unwrap().a3_server_executable,
                         &self.port_num,
-                        i
+                        i,
                     );
 
                     // handle error
                     if let Err(err) = launch_result {
-                        return Task::done(Message::Error(err.to_string()))
+                        return Task::done(Message::Error(err.to_string()));
                     }
                 }
             }

@@ -1,15 +1,14 @@
+use crate::ServerModList;
 use anyhow::Result;
+use glob::{MatchOptions, glob_with};
 use std::fs;
 use std::fs::metadata;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use crate::ServerModList;
-use glob::{glob_with, MatchOptions};
 
 static LOADED_MODS_FILE: &str = "corvuslauncher_loaded_mods.txt";
 
 pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
-
     //
     let options = MatchOptions {
         case_sensitive: false,
@@ -20,7 +19,6 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
 
     let search_pattern = format!("{}\\**\\*.bikey", path.to_string_lossy());
     for entry in glob_with(&search_pattern, options)? {
-
         let p = entry?.to_path_buf();
 
         // custom handling, do not include \optionals\ from ACE
@@ -107,7 +105,6 @@ pub fn launch_server(
     let server_and_clientsides = [modlist.clone(), clientsides].concat();
 
     for modpath in server_and_clientsides.iter() {
-
         // make absolute path from relative
         let full_path = a3root.clone().join(modpath);
 
@@ -145,17 +142,38 @@ pub fn launch_server(
     // launch HC and null stdin, out and error, to fork and disown process. We should be able to close launcher without killing server
     Command::new(a3_executable)
         .args(["-port", port])
-        .args(["-hugepages", "-maxMem=30000", "-maxFileCacheSize=8192", "-enableHT", "-bandwidthAlg=2", "-limitFPS=1000", "-loadMissionToMemory"])
+        .args([
+            "-hugepages",
+            "-maxMem=30000",
+            "-maxFileCacheSize=8192",
+            "-enableHT",
+            "-bandwidthAlg=2",
+            "-limitFPS=1000",
+            "-loadMissionToMemory",
+        ])
         .args(["-name=server", "-world=empty"])
-        .args(["-profiles", &a3root.clone().join(server_profile).to_string_lossy()])
+        .args([
+            "-profiles",
+            &a3root.clone().join(server_profile).to_string_lossy(),
+        ])
         .args(["-config=", &find_config(&a3root)?.to_string_lossy()])
-        .args(["-cfg=", &a3root.clone().join(server_profile).join("Users").join("server").join("Arma3.cfg").to_string_lossy()])
+        .args([
+            "-cfg=",
+            &a3root
+                .clone()
+                .join(server_profile)
+                .join("Users")
+                .join("server")
+                .join("Arma3.cfg")
+                .to_string_lossy(),
+        ])
         .args(["-serverMod=", &server_mod_string_vec.join(";")])
         .args(["-par=", &par_modlist.to_string_lossy()])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .spawn().unwrap();
+        .spawn()
+        .unwrap();
 
     Ok(())
 }
@@ -170,7 +188,13 @@ pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u
         .args(["-port", port])
         .arg("-client")
         .args(["-password=", &server_password])
-        .args(["-profiles", &a3root.clone().join(format!("headlessProfile{}", index)).to_string_lossy()])
+        .args([
+            "-profiles",
+            &a3root
+                .clone()
+                .join(format!("headlessProfile{}", index))
+                .to_string_lossy(),
+        ])
         .args(["-name=", &format!("hc{}", index)])
         .args(["-par=", &a3root.join(LOADED_MODS_FILE).to_string_lossy()])
         .stdin(Stdio::null())
