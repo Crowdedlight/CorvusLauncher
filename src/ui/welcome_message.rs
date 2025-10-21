@@ -150,7 +150,7 @@ impl WelcomeView {
                 Task::done(Message::ReloadViews())
             }
             Message::ReloadViews() => {
-                //todo reload views
+                //this is only called to allow to send a reloadViews message that can get captured by super. So here we do noting
                 log::debug!("ReloadViews() called");
                 Task::none()
             }

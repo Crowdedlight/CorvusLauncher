@@ -40,8 +40,8 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
 
     match keys.is_empty() {
         true => Err(anyhow::Error::msg(format!(
-            "No Bikey found in mod: {:?}",
-            path.file_name()
+            "No Bikey found in mod: {}",
+            path.file_name().unwrap().to_string_lossy()
         ))),
         false => Ok(keys),
     }

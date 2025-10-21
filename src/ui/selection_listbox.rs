@@ -1,14 +1,8 @@
 //! A listbox consisting of title, and a scrollable box with available presets. Reused across All_mods, Server_mods and Clientside mods
-
-// TODO make box, reuse functionality from AMDU and its selectable modrow.
-//  This widget should come as a column/stack, and have Title and then the box with options
-
 use crate::ServerModList;
-use humansize::{DECIMAL, format_size};
 use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{Space, button, checkbox, column, container, row, scrollable, text};
+use iced::widget::{button, checkbox, column, row, scrollable, text};
 use iced::{Element, Length, Task, Theme};
-use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct SelectionListbox {
@@ -59,8 +53,7 @@ impl SelectionListbox {
                             text(&modlist.name)
                                 .width(Length::FillPortion(8))
                                 .width(Length::FillPortion(8)),
-                            // checkbox("", modlist.selected).on_toggle(self.checkbox_toggled(i)), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
-                            checkbox("", modlist.selected), // TODO if this does not work, just remove the check specifically on checkbox and only allow button row
+                            checkbox("", modlist.selected),
                         ])
                         .padding(8)
                         .style(|theme: &Theme, status| {

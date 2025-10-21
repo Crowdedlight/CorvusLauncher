@@ -2,11 +2,8 @@
 
 use crate::messages::Message;
 
-use iced::widget::space;
-use iced::{
-    Background, Color, Element,
-    widget::{self, Column, Space, container, row},
-};
+use iced::widget::{button, scrollable, space, Container};
+use iced::{Background, Color, Element, widget::{self, Column, column, Space, container, row}, Length};
 use std::{
     borrow::Cow,
     time::{Duration, Instant},
@@ -32,10 +29,7 @@ impl ErrorMessage {
 }
 
 // error message Width
-const ERROR_WIDTH: f32 = 300.0;
-
-// When the error appears, how long should it take until it will disappear
-const ERROR_DURATION: Duration = Duration::from_secs(3);
+const ERROR_WIDTH: f32 = 600.0;
 
 /// Render errors on the screen
 #[derive(Default, Debug)]
@@ -44,24 +38,25 @@ pub struct Errors {
     pub errors: Vec<ErrorMessage>,
 }
 
-// TODO Errors not being shown atm, figure out why
-
 impl Errors {
     pub fn push<T: Into<Cow<'static, str>> + std::fmt::Display>(&mut self, error: T) {
         self.errors.push(ErrorMessage::new(error));
     }
 
     // Show errors on the screen
-    pub fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
+    pub fn view<'app>(&self, app: &'app super::App, on_clear: impl Fn() -> Message) -> Option<Element<'app, Message>> {
+
+        // if no errors, we just return
+        if self.errors.is_empty() {
+            return None;
+        }
+
         let errors = self
             .errors
             .iter()
             .rev()
-            // don't display more than the most recent 3 errors
-            .take(3)
-            .filter(|&error| (error.timestamp.elapsed() < ERROR_DURATION))
             .map(|error| {
-                container(widget::text!("Error: {}", error.message))
+                container(widget::text!("Errors:\n{}", error.message))
                     .height(80)
                     .width(ERROR_WIDTH)
                     // .style(|_| container::Style {
@@ -81,6 +76,40 @@ impl Errors {
             .width(ERROR_WIDTH)
             .spacing(30);
 
-        row![Space::new().width(ERROR_WIDTH), errors].into()
+        Some(container(
+            container(
+                column![
+                    scrollable(errors),
+                    container(button("Clear Errors").on_press(on_clear()))
+                    .align_bottom(Length::Fill)
+                    .align_right(Length::Fill)
+                    .padding(20)
+                ]
+            )
+                .align_left(Length::Fixed(620.0))
+                .align_top(Length::Fixed(450.0))
+                .style(|_| iced::widget::container::Style {
+                    text_color: None,
+                    background: Some(Background::Color(Color::from_rgba8(114, 119, 130, 1.0))),
+                    border: iced::Border::default()
+                        // .color(app.config.theme.info_box_border)
+                        .rounded(6.0)
+                        .width(1.5),
+                    shadow: iced::Shadow::default(),
+                    snap: false,
+                })
+        )
+            .center(Length::Fill)
+            .style(|_| iced::widget::container::Style {
+                // text_color: Some(app.config.theme.info_box_fg),
+                background: Some(Background::Color(Color::from_rgba8(43, 45, 49, 0.4))),
+                text_color: None,
+                border: iced::Border::default()
+                    // .color(app.config.theme.info_box_border)
+                    .rounded(6.0)
+                    .width(1.5),
+                shadow: iced::Shadow::default(),
+                snap: false,
+            }).into())
     }
 }

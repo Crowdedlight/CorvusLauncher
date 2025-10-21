@@ -87,7 +87,6 @@ impl App {
             cli,
             port_num: "2302".to_string(),
             // popup: None,
-            // TODO, delete default testing
             selection_listboxes: vec![
                 SelectionListbox::new(
                     0,
@@ -176,22 +175,18 @@ impl App {
                 .width(Length::Fill)
             ])
             .push(welcome_view)
-            .push(self.errors.view(self))
+            .push(self.errors.view(self, Message::ClearErrors))
             .into()
     }
 
     /// Modifies the app's state
     pub fn update(&mut self, message: Message) -> Task<Message> {
-        use crate::messages::Handler as _;
 
         match message {
             // Message::ClosePopup => {
             //     self.popup = None;
             // }
             Message::NoOp => (),
-            // Message::Command { action, count } => {
-            //     return <crate::Command as crate::command::Handler>::handle(action, self, count);
-            // }
             Message::Error(err) => {
                 self.errors.push(err);
             }
@@ -236,7 +231,7 @@ impl App {
                 let c = self.config.clone();
 
                 // launch server
-                launch_server(
+                let launch_result = launch_server(
                     &c.read().unwrap().a3_root,
                     &c.read().unwrap().a3_server_executable,
                     &self.port_num,
@@ -245,6 +240,10 @@ impl App {
                     clientside_mods,
                     server_mods,
                 );
+                // handle error
+                if let Err(err) = launch_result {
+                    return Task::done(Message::Error(err.to_string()))
+                }
             }
             Message::LaunchHCs() => {
                 // get config
@@ -252,13 +251,22 @@ impl App {
 
                 // launch HCs
                 for i in 0 .. self.hc_launch_num.value {
-                    launch_hc(
+                    let launch_result = launch_hc(
                         &c.read().unwrap().a3_root,
                         &c.read().unwrap().a3_server_executable,
                         &self.port_num,
                         i
                     );
+
+                    // handle error
+                    if let Err(err) = launch_result {
+                        return Task::done(Message::Error(err.to_string()))
+                    }
                 }
+            }
+            Message::ClearErrors() => {
+                // clear errors
+                self.errors.errors.clear();
             }
         }
 

@@ -46,13 +46,3 @@ fn main() -> anyhow::Result<()> {
     .run()
     .map_err(|err| anyhow!("Failed to start CorvusLauncher: {err}"))
 }
-
-// TODO - On launch, check if settings are set at ~temp location, depending on OS.
-//        If set load and continue, otherwise make window for user to set location for CORE, Modpacks, Arma3 install, and save at temp location. (Like how Hemtt does)
-// TODO - UI show list of modpacks in CORE, Modpacks, Clientside folders. All toggleable with checkbox, and CORE pre-selected
-// TODO - Button to start server with selected mods, button to start headless 1 and 2
-// TODO - When selected to start, run the functionality the powershell script otherwise did. (Clean keys, go trough mods, look for keys and copy in etc).
-// TODO - If failing to find a key, show error to user in popup
-// TODO - launch arma3 server with selected mods passed to it, and disown the process so the launcher can be closed
-
-// TODO - Extra, selection what server-profile to use. Events, or normal. (for netcode settings and log location etc)

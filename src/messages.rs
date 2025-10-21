@@ -36,6 +36,8 @@ pub enum Message {
 
     /// An error occured, display to the user
     Error(String),
+    /// clear Error messages
+    ClearErrors(),
     /// Do nothing
     NoOp,
 }
