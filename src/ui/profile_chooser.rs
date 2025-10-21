@@ -1,8 +1,7 @@
-use iced::alignment::{Horizontal, Vertical};
+use iced::alignment::{Horizontal};
 use iced::widget::pick_list;
-use iced::widget::{button, column, text};
+use iced::widget::{column, text};
 use iced::{Element, Task};
-use std::path::PathBuf;
 
 #[derive(Debug, Default)]
 pub struct ProfileChooser {
@@ -23,7 +22,7 @@ impl ProfileChooser {
             options: profiles,
         }
     }
-    pub fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
+    pub fn view<'app>(&self, _app: &'app super::App) -> Element<'app, Message> {
         // TODO add gui to add new server profiles?
 
         column![

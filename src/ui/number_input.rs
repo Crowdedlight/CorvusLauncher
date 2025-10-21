@@ -27,7 +27,7 @@ impl NumberInput {
             }
         }
     }
-    pub fn view<'app>(&self, app: &'app super::App) -> Element<'app, Message> {
+    pub fn view<'app>(&self, _app: &'app super::App) -> Element<'app, Message> {
         row![
             button("-").on_press(Message::ValueDecreased()).padding(5),
             text(self.value.to_string())

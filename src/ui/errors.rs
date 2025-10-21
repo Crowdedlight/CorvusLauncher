@@ -2,14 +2,14 @@
 
 use crate::messages::Message;
 
-use iced::widget::{Container, button, scrollable, space};
+use iced::widget::{button, scrollable};
 use iced::{
     Background, Color, Element, Length,
-    widget::{self, Column, Space, column, container, row},
+    widget::{self, Column, column, container},
 };
 use std::{
     borrow::Cow,
-    time::{Duration, Instant},
+    time::{Instant},
 };
 
 /// Show an error message to the user
@@ -49,7 +49,7 @@ impl Errors {
     // Show errors on the screen
     pub fn view<'app>(
         &self,
-        app: &'app super::App,
+        _app: &'app super::App,
         on_clear: impl Fn() -> Message,
     ) -> Option<Element<'app, Message>> {
         // if no errors, we just return

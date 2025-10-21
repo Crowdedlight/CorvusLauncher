@@ -4,15 +4,12 @@ use crate::messages::Message;
 use crate::{Cli, Config, ServerModList};
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::space::{horizontal, vertical};
-use iced::widget::{Button, Stack, rule, slider, space, text_input};
-use iced::widget::{Rule, Space, button, column, container, progress_bar, row, scrollable, text};
+use iced::widget::{Stack, rule, text_input};
+use iced::widget::{button, column, row, text};
 use iced::{Element, Length, Task};
-use std::cmp::PartialEq;
-use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
-// use crate::Config;
 
 use super::Errors;
 use crate::ui;
@@ -94,7 +91,7 @@ impl App {
     }
 
     /// Renders the app
-    pub fn view(&self) -> iced::Element<Message> {
+    pub fn view(&'_ self) -> iced::Element<'_, Message> {
         // conditionally set to Some or None to show this view
         let mut welcome_view: Option<Element<Message>> = None;
         // only push welcome for configuration if current config is invalid
@@ -182,7 +179,7 @@ impl App {
             }
             Message::SelectionBoxUpdate(index, listbox_msg) => {
                 if let Some(listbox) = self.selection_listboxes.get_mut(index) {
-                    listbox.update(listbox_msg);
+                    let _ = listbox.update(listbox_msg);
                 }
             }
             Message::HcInputChanged(msg) => {
@@ -206,13 +203,20 @@ impl App {
                     self.selection_listboxes.get_mut(0).unwrap().elements = modlist;
                     self.selection_listboxes.get_mut(1).unwrap().elements = clientside;
                     self.selection_listboxes.get_mut(2).unwrap().elements = servermods;
-                }
+                };
 
-                // pass message on, has to return here as otherwise we would never get messages initiated in WelcomeViewMessage update()
-                return self
-                    .welcome_view
-                    .update(msg)
-                    .map(Message::WelcomeViewMessage);
+                // Handle error or pass message on, has to return here as otherwise we would never get messages initiated in WelcomeViewMessage update()
+                return match msg {
+                    ui::welcome_message::Message::Error(error) => {
+                        Task::done(Message::Error(error))
+                    }
+                    _ => {
+                        self
+                            .welcome_view
+                            .update(msg)
+                            .map(Message::WelcomeViewMessage)
+                    }
+                }
             }
             Message::ChangePortNumber(new_port) => {
                 self.port_num = new_port;

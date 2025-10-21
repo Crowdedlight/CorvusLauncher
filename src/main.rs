@@ -1,9 +1,9 @@
-use CorvusLauncher::Cli;
-use CorvusLauncher::{App, Config};
+use corvus_launcher::Cli;
+use corvus_launcher::{App, Config};
 use anyhow::anyhow;
 use clap::Parser as _;
 use iced::Theme::Dark;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 /// RGBA bytes for the Logo. Generated with `build.rs`
 const LOGO: &[u8; 64 * 64 * 4] = include_bytes!(concat!(env!("OUT_DIR"), "/logo.bin"));
@@ -13,7 +13,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Arc::new(Cli::parse());
 
     // Setup logging
-    CorvusLauncher::logging::initialize(&cli);
+    corvus_launcher::logging::initialize(&cli);
 
     // init config
     let config = Arc::new(RwLock::new(Config::new()));

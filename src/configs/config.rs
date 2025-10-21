@@ -1,5 +1,5 @@
 use crate::messages::Message;
-use etcetera::{AppStrategy, AppStrategyArgs, BaseStrategy, choose_app_strategy};
+use etcetera::{AppStrategyArgs, BaseStrategy, choose_app_strategy};
 use iced::Task;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

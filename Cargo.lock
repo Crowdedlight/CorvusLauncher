@@ -3,26 +3,6 @@
 version = 4
 
 [[package]]
-name = "CorvusLauncher"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bon",
- "chrono",
- "clap",
- "env_logger",
- "etcetera",
- "glob",
- "humansize",
- "iced",
- "image",
- "log",
- "rfd",
- "serde",
- "toml 0.9.7",
-]
-
-[[package]]
 name = "ab_glyph"
 version = "0.2.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -850,6 +830,26 @@ dependencies = [
  "bitflags 2.9.4",
  "core-foundation 0.10.1",
  "libc",
+]
+
+[[package]]
+name = "corvus_launcher"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bon",
+ "chrono",
+ "clap",
+ "env_logger",
+ "etcetera",
+ "glob",
+ "humansize",
+ "iced",
+ "image",
+ "log",
+ "rfd",
+ "serde",
+ "toml 0.9.7",
 ]
 
 [[package]]

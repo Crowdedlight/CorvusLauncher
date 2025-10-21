@@ -7,15 +7,13 @@ use iced::alignment::Horizontal;
 use iced::widget::text::Wrapping;
 use iced::widget::{button, container, space};
 use iced::{
-    Background, Color, Element, Font,
-    Length::{self, Fill},
-    Task, Theme,
+    Background, Color, Element,
+    Length::{self},
+    Task,
     alignment::Vertical,
-    application,
-    widget::space::{horizontal, vertical},
-    widget::{Column, Space, column, row, text, text::Shaping},
+    widget::space::{vertical},
+    widget::{Space, column, row, text},
 };
-use std::fmt::Alignment;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
@@ -36,6 +34,8 @@ pub enum Message {
     SaveUpdateConfig(PathBuf, PathBuf, PathBuf, PathBuf),
     /// reload views depending on config values
     ReloadViews(),
+    /// Error message for catching in main app
+    Error(String),
 }
 
 impl WelcomeView {
@@ -50,7 +50,7 @@ impl WelcomeView {
             config: config.clone(),
         }
     }
-    pub fn view<'app>(&'app self, app: &'app super::App) -> Element<'app, Message> {
+    pub fn view<'app>(&'app self, _app: &'app super::App) -> Element<'app, Message> {
         let file_dialogs = iced::widget::container(
             iced::widget::container(column![
                 text("Please Configure App")
@@ -139,12 +139,18 @@ impl WelcomeView {
                 Task::none()
             }
             Message::SaveUpdateConfig(a3root, modlist, clientsides, servermods) => {
-                self.config.write().unwrap().update_config(
+                let result_config = self.config.write().unwrap().update_config(
                     a3root,
                     modlist,
                     clientsides,
                     servermods,
                 );
+
+                // if error, return error
+                if let Err(err) = result_config {
+                    return Task::done(Message::Error(err.to_string()));
+                }
+
                 // TODO the right way here would be to have this class depend on reference to config and its paths, as then change of paths would trigger a reload of files
                 //  but if this works for now, we leave it be, as the other is a bigger change
                 Task::done(Message::ReloadViews())
@@ -152,6 +158,11 @@ impl WelcomeView {
             Message::ReloadViews() => {
                 //this is only called to allow to send a reloadViews message that can get captured by super. So here we do noting
                 log::debug!("ReloadViews() called");
+                Task::none()
+            }
+            Message::Error(_) => {
+                //this is only called to allow to send a error message that can get captured by super. So here we do noting
+                log::debug!("Welcome_message Error() called");
                 Task::none()
             }
         }

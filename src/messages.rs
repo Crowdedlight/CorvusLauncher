@@ -1,16 +1,5 @@
 //! A message represents some event in the app that mutates the global state
-
-use crate::configs::config::LocationPaths;
 use crate::ui;
-use std::path::PathBuf;
-use std::sync::Arc;
-use std::time::Instant;
-
-/// Handles all mutation of the global state, the `App`.
-pub trait Handler {
-    /// Handle the message, mutating the `App`.
-    fn handle(self, app: &mut crate::App) -> iced::Task<Message>;
-}
 
 /// Represents an action happening in the application
 #[derive(Debug, Clone)]

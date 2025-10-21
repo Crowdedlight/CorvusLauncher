@@ -9,6 +9,3 @@ pub(crate) mod welcome_message;
 
 pub use app::App;
 use errors::Errors;
-use number_input::NumberInput;
-use profile_chooser::ProfileChooser;
-use welcome_message::WelcomeView;
