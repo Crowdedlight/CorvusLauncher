@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use corvus_launcher::Cli;
 use corvus_launcher::{App, Config};
 use anyhow::anyhow;
