@@ -70,20 +70,6 @@ jobs:
             mv "target/${{ matrix.target }}/release/$binary_name" "$dirname"
           fi
 
-          # copy steamworks library
-          # WINDOWS
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "steamworks_redistributable/steam_api64.dll" "$dirname"
-          fi
-          # LINUX
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            cp "steamworks_redistributable/libsteam_api.so" "$dirname"
-          fi
-          # MAC
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            cp "steamworks_redistributable/libsteam_api.dylib" "$dirname"
-          fi
-
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             7z a "$dirname.zip" "$dirname"
             echo "ASSET=$dirname.zip" >> $GITHUB_ENV
