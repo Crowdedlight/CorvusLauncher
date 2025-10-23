@@ -19,6 +19,8 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
     let current_path = PathBuf::from(glob::Pattern::escape(&path.to_string_lossy()));
     let search_pattern = current_path.join("**").join("*.bikey");
 
+    log::info!("Searching for bikey files in {:?}", search_pattern);
+
     for entry in glob_with(&search_pattern.to_string_lossy(), options)? {
         let p = entry?.to_path_buf();
 
@@ -141,8 +143,9 @@ pub fn launch_server(
         .collect();
 
     // launch HC and null stdin, out and error, to fork and disown process. We should be able to close launcher without killing server
-    Command::new(a3_executable)
-        .args(["-port", port])
+    let mut launch_cmd = Command::new(a3_executable);
+    launch_cmd
+        .arg(format!("-port={}", port))
         .args([
             "-hugepages",
             "-maxMem=30000",
@@ -153,27 +156,34 @@ pub fn launch_server(
             "-loadMissionToMemory",
         ])
         .args(["-name=server", "-world=empty"])
-        .args([
-            "-profiles",
-            &a3root.clone().join(server_profile).to_string_lossy(),
-        ])
-        .args(["-config=", &find_config(a3root)?.to_string_lossy()])
-        .args([
-            "-cfg=",
+        .arg(
+            format!("-profiles={}",&a3root.clone().join(server_profile).to_string_lossy())
+        )
+        .arg(
+            format!("-config={}", &find_config(a3root)?.to_string_lossy()))
+        .arg(
+            format!("-cfg={}",
             &a3root
                 .clone()
                 .join(server_profile)
                 .join("Users")
                 .join("server")
                 .join("Arma3.cfg")
-                .to_string_lossy(),
-        ])
-        .args(["-serverMod=", &server_mod_string_vec.join(";")])
-        .args(["-par=", &par_modlist.to_string_lossy()])
+                .to_string_lossy())
+        )
+        .arg(format!("-serverMod={}", &server_mod_string_vec.join(";")))
+        .arg(format!("-par={}", &par_modlist.to_string_lossy()));
+
+    log::info!("launch server: {}", pretty_cmd(&launch_cmd));
+
+    // launch command
+    launch_cmd
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()?;
+
+    // TODO change so log-level is given from config instead of CLI, so we can easier change without recompile. (cmd line acts up trying to launch it from it)
 
     Ok(())
 }
@@ -184,23 +194,31 @@ pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u
     let server_password = get_server_password_from_config(find_config(a3root)?)?;
 
     // launch HC and null stdin, out and error, to fork and disown process. We should be able to close launcher without killing hcs
-    Command::new(a3_executable)
-        .args(["-port", port])
+    let mut launch_cmd = Command::new(a3_executable);
+    launch_cmd
+        .arg(format!("-port={}", port))
         .arg("-client")
-        .args(["-password=", &server_password])
-        .args([
-            "-profiles",
+        .arg(format!("-password={}", &server_password))
+        .arg(
+            format!("-profiles={}",
             &a3root
                 .clone()
                 .join(format!("headlessProfile{}", index))
-                .to_string_lossy(),
-        ])
-        .args(["-name=", &format!("hc{}", index)])
-        .args(["-par=", &a3root.join(LOADED_MODS_FILE).to_string_lossy()])
+                .to_string_lossy()),
+        )
+        .arg(format!("-name={}", &format!("hc{}", index)))
+        .arg(format!("-par={}", &a3root.join(LOADED_MODS_FILE).to_string_lossy()));
+
+    // log launch parameter
+    log::info!("launch HC{}: {}", index, pretty_cmd(&launch_cmd));
+
+    // run command
+    launch_cmd
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()?;
+
     Ok(())
 }
 
@@ -244,6 +262,16 @@ pub fn get_server_password_from_config(a3_config: PathBuf) -> Result<String> {
     Err(anyhow::Error::msg(
         "Failed to parse config and find password...",
     ))
+}
+
+fn pretty_cmd(cmd: &Command) -> String {
+    format!(
+        "{} {:?}",
+        cmd.get_envs()
+            .map(|(key, val)| format!("{:?}={:?}", key, val))
+            .fold(String::new(), |a, b| a + &b),
+        cmd
+    )
 }
 
 #[cfg(test)]
