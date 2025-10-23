@@ -39,7 +39,7 @@ pub struct Cli {
         help_heading = "Debug",
         long,
         value_name = "LEVEL",
-        default_value = "info",
+        default_value = "warn",
         long_help = "Choose a minimum level at which to log. [error, warn, info, debug, trace, off]",
         hide = !cfg!(feature = "debug")
     )]

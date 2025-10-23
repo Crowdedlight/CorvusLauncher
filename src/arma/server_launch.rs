@@ -15,8 +15,11 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
 
     let mut keys: Vec<PathBuf> = Vec::new();
 
-    let search_pattern = format!("{}\\**\\*.bikey", path.to_string_lossy());
-    for entry in glob_with(&search_pattern, options)? {
+    // have to do handle GLOB escape chars, as some paths can have [] in their name
+    let current_path = PathBuf::from(glob::Pattern::escape(&path.to_string_lossy()));
+    let search_pattern = current_path.join("**").join("*.bikey");
+
+    for entry in glob_with(&search_pattern.to_string_lossy(), options)? {
         let p = entry?.to_path_buf();
 
         // custom handling, do not include \optionals\ from ACE
@@ -28,7 +31,7 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
     }
 
     // Logging
-    log::debug!(
+    log::info!(
         "Found Following bikeys in mod, {:?}: {:?}",
         path.file_name(),
         keys
@@ -111,7 +114,7 @@ pub fn launch_server(
             Ok(mut path) => {
                 bikeys.append(&mut path);
             }
-            Err(e) => missing_keys.push(e.to_string()),
+        Err(e) => missing_keys.push(e.to_string()),
         }
     }
 
