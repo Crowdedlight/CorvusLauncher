@@ -16,8 +16,8 @@ impl ServerModList {
         let raw_file = read_to_string(&path).expect("File not found");
         let mods: Vec<PathBuf> = raw_file.trim_start_matches("\u{feff}").split_terminator(";").map(PathBuf::from).collect();
 
-        log::info!("raw_file_string: {:?}", raw_file);
-        log::info!("parsed mods: {:?}", mods);
+        log::debug!("raw_file_string: {:?}", raw_file);
+        log::debug!("parsed mods: {:?}", mods);
 
         Self {
             name,

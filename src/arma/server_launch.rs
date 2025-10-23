@@ -19,7 +19,7 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
     let current_path = PathBuf::from(glob::Pattern::escape(&path.to_string_lossy()));
     let search_pattern = current_path.join("**").join("*.bikey");
 
-    log::info!("Searching for bikey files in {:?}", search_pattern);
+    log::debug!("Searching for bikey files in {:?}", search_pattern);
 
     for entry in glob_with(&search_pattern.to_string_lossy(), options)? {
         let p = entry?.to_path_buf();
@@ -33,7 +33,7 @@ pub fn find_bikey(path: &Path) -> Result<Vec<PathBuf>> {
     }
 
     // Logging
-    log::info!(
+    log::debug!(
         "Found Following bikeys in mod, {:?}: {:?}",
         path.file_name(),
         keys
@@ -174,7 +174,7 @@ pub fn launch_server(
         .arg(format!("-serverMod={}", &server_mod_string_vec.join(";")))
         .arg(format!("-par={}", &par_modlist.to_string_lossy()));
 
-    log::info!("launch server: {}", pretty_cmd(&launch_cmd));
+    log::debug!("launch server: {}", pretty_cmd(&launch_cmd));
 
     // launch command
     launch_cmd
@@ -182,8 +182,6 @@ pub fn launch_server(
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()?;
-
-    // TODO change so log-level is given from config instead of CLI, so we can easier change without recompile. (cmd line acts up trying to launch it from it)
 
     Ok(())
 }
@@ -210,7 +208,7 @@ pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u
         .arg(format!("-par={}", &a3root.join(LOADED_MODS_FILE).to_string_lossy()));
 
     // log launch parameter
-    log::info!("launch HC{}: {}", index, pretty_cmd(&launch_cmd));
+    log::debug!("launch HC{}: {}", index, pretty_cmd(&launch_cmd));
 
     // run command
     launch_cmd

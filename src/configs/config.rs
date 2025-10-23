@@ -21,6 +21,9 @@ pub enum LocationPaths {
     ServerMods,
 }
 
+// TODO change so log-level is given from config instead of CLI, so we can easier change without recompile. (cmd line acts up trying to launch it from it)
+//  Required to implement deserialize and serialize for LogLevel...
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub a3_root: PathBuf,
