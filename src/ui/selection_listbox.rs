@@ -54,7 +54,7 @@ impl SelectionListbox {
                                 .width(Length::FillPortion(6)),
                             text(format!("[{}]", &modlist.mods.len()))
                                 .width(Length::FillPortion(2)),
-                            checkbox("", modlist.selected),
+                            checkbox(modlist.selected),
                         ])
                         .padding(8)
                         .style(|theme: &Theme, status| {
