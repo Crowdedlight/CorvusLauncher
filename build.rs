@@ -2,6 +2,13 @@
 //! This is so that we don't need to do this work at runtime
 fn main() {
     println!("cargo:rerun-if-changed=assets/logo.png");
+    println!("cargo:rerun-if-changed=assets/logo.ico");
+
+    // Compile and link icon for windows
+    if std::env::var("CARGO_CFG_TARGET_OS").unwrap() == "windows" {
+        embed_resource::compile(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/resources.rc"), embed_resource::NONE)
+            .manifest_optional().unwrap();
+    }
 
     let image = image::open(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/logo.png"))
         .expect("Failed to get the logo")
