@@ -8,8 +8,8 @@ build = "build.rs"
 debug = []
 
 [dependencies]
-#iced = "0.13.1"
-iced = { git = "https://github.com/iced-rs/iced", rev = "0a34496"}
+iced = "0.14.0"
+#iced = { git = "https://github.com/iced-rs/iced", rev = "0a34496"}
 
 # Error handling
 anyhow = "1.0.100"
