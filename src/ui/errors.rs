@@ -7,10 +7,7 @@ use iced::{
     Background, Color, Element, Length,
     widget::{self, Column, column, container},
 };
-use std::{
-    borrow::Cow,
-    time::{Instant},
-};
+use std::{borrow::Cow, time::Instant};
 
 /// Show an error message to the user
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]

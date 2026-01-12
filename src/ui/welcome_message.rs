@@ -11,7 +11,7 @@ use iced::{
     Length::{self},
     Task,
     alignment::Vertical,
-    widget::space::{vertical},
+    widget::space::vertical,
     widget::{Space, column, row, text},
 };
 use std::path::PathBuf;

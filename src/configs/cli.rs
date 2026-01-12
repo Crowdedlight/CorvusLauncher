@@ -82,4 +82,3 @@ pub struct Cli {
     )]
     pub debug: bool,
 }
-

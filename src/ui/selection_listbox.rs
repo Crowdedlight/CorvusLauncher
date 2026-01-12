@@ -50,8 +50,7 @@ impl SelectionListbox {
                 .fold(column![].spacing(6), |col, (i, modlist)| {
                     col.push(row![
                         button(row![
-                            text(&modlist.name)
-                                .width(Length::FillPortion(6)),
+                            text(&modlist.name).width(Length::FillPortion(6)),
                             text(format!("[{}]", &modlist.mods.len()))
                                 .width(Length::FillPortion(2)),
                             checkbox("", modlist.selected),

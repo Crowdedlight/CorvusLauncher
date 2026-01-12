@@ -1,9 +1,9 @@
 #![windows_subsystem = "windows"]
 
-use corvus_launcher::Cli;
-use corvus_launcher::{App, Config};
 use anyhow::anyhow;
 use clap::Parser as _;
+use corvus_launcher::Cli;
+use corvus_launcher::{App, Config};
 use iced::Theme::Dark;
 use std::sync::{Arc, RwLock};
 

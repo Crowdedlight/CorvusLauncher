@@ -147,9 +147,7 @@ impl App {
                     horizontal().width(20),
                     column![
                         text("HCs Amount").size(24),
-                        self.hc_launch_num
-                            .view(self)
-                            .map(Message::HcInputChanged),
+                        self.hc_launch_num.view(self).map(Message::HcInputChanged),
                         button("LAUNCH HCs")
                             .padding(10)
                             .on_press(Message::LaunchHCs()),
@@ -207,16 +205,12 @@ impl App {
 
                 // Handle error or pass message on, has to return here as otherwise we would never get messages initiated in WelcomeViewMessage update()
                 return match msg {
-                    ui::welcome_message::Message::Error(error) => {
-                        Task::done(Message::Error(error))
-                    }
-                    _ => {
-                        self
-                            .welcome_view
-                            .update(msg)
-                            .map(Message::WelcomeViewMessage)
-                    }
-                }
+                    ui::welcome_message::Message::Error(error) => Task::done(Message::Error(error)),
+                    _ => self
+                        .welcome_view
+                        .update(msg)
+                        .map(Message::WelcomeViewMessage),
+                };
             }
             Message::ChangePortNumber(new_port) => {
                 self.port_num = new_port;
@@ -224,7 +218,8 @@ impl App {
             Message::LaunchServer() => {
                 // combine selected mods
                 let everyone_mods: Vec<PathBuf> = self
-                    .selection_listboxes.first()
+                    .selection_listboxes
+                    .first()
                     .unwrap()
                     .elements
                     .iter()

@@ -1,11 +1,11 @@
 use etcetera::BaseStrategy;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
+use std::fs;
 use std::fs::exists;
 use std::path::PathBuf;
 use std::string::ToString;
 use std::sync::LazyLock;
-use std::fs;
 
 /// Arma server binary name depending on platform
 #[cfg(target_os = "linux")]

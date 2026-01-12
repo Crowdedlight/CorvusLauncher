@@ -116,7 +116,7 @@ pub fn launch_server(
             Ok(mut path) => {
                 bikeys.append(&mut path);
             }
-        Err(e) => missing_keys.push(e.to_string()),
+            Err(e) => missing_keys.push(e.to_string()),
         }
     }
 
@@ -156,21 +156,24 @@ pub fn launch_server(
             "-loadMissionToMemory",
         ])
         .args(["-name=server", "-world=empty"])
-        .arg(
-            format!("-profiles={}",&a3root.clone().join(server_profile).to_string_lossy())
-        )
-        .arg(
-            format!("-config={}", &find_config(a3root)?.to_string_lossy()))
-        .arg(
-            format!("-cfg={}",
+        .arg(format!(
+            "-profiles={}",
+            &a3root.clone().join(server_profile).to_string_lossy()
+        ))
+        .arg(format!(
+            "-config={}",
+            &find_config(a3root)?.to_string_lossy()
+        ))
+        .arg(format!(
+            "-cfg={}",
             &a3root
                 .clone()
                 .join(server_profile)
                 .join("Users")
                 .join("server")
                 .join("Arma3.cfg")
-                .to_string_lossy())
-        )
+                .to_string_lossy()
+        ))
         .arg(format!("-serverMod={}", &server_mod_string_vec.join(";")))
         .arg(format!("-par={}", &par_modlist.to_string_lossy()));
 
@@ -197,15 +200,18 @@ pub fn launch_hc(a3root: &PathBuf, a3_executable: &PathBuf, port: &str, index: u
         .arg(format!("-port={}", port))
         .arg("-client")
         .arg(format!("-password={}", &server_password))
-        .arg(
-            format!("-profiles={}",
+        .arg(format!(
+            "-profiles={}",
             &a3root
                 .clone()
                 .join(format!("headlessProfile{}", index))
-                .to_string_lossy()),
-        )
+                .to_string_lossy()
+        ))
         .arg(format!("-name={}", &format!("hc{}", index)))
-        .arg(format!("-par={}", &a3root.join(LOADED_MODS_FILE).to_string_lossy()));
+        .arg(format!(
+            "-par={}",
+            &a3root.join(LOADED_MODS_FILE).to_string_lossy()
+        ));
 
     // log launch parameter
     log::debug!("launch HC{}: {}", index, pretty_cmd(&launch_cmd));
@@ -252,9 +258,9 @@ pub fn get_server_password_from_config(a3_config: PathBuf) -> Result<String> {
         if l.starts_with("password")
             && let Some((password, _)) =
                 l[8..].replacen("=", "", 1).replace('"', "").split_once(";")
-            {
-                return Ok(password.trim().to_string());
-            }
+        {
+            return Ok(password.trim().to_string());
+        }
     }
 
     Err(anyhow::Error::msg(

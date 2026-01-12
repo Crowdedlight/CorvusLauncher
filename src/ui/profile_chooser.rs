@@ -1,4 +1,4 @@
-use iced::alignment::{Horizontal};
+use iced::alignment::Horizontal;
 use iced::widget::pick_list;
 use iced::widget::{column, text};
 use iced::{Element, Task};

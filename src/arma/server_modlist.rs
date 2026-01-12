@@ -14,7 +14,11 @@ impl ServerModList {
     pub fn new(name: String, path: PathBuf, selected: bool) -> ServerModList {
         // parse file with given path
         let raw_file = read_to_string(&path).expect("File not found");
-        let mods: Vec<PathBuf> = raw_file.trim_start_matches("\u{feff}").split_terminator(";").map(PathBuf::from).collect();
+        let mods: Vec<PathBuf> = raw_file
+            .trim_start_matches("\u{feff}")
+            .split_terminator(";")
+            .map(PathBuf::from)
+            .collect();
 
         log::debug!("raw_file_string: {:?}", raw_file);
         log::debug!("parsed mods: {:?}", mods);
