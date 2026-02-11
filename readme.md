@@ -10,8 +10,7 @@ It is built using Iced framework for rust gui applications.
 It is only tested on Windows machine, as that is what the community use to run gameservers on, but it is made to support crossplatform. 
 
 **TODO:**
-- Write readme for documentation of .txt format expected in modlist files and general usage, including config file location
-- Add gui dialog to add new server profiles 
+- Add gui dialog to add new server profiles, instead of requiring them being set manually in the "config" file.
 - Verify if loggin is actually written to file, and if not, then why
 
 ## Modpreset fileformat
